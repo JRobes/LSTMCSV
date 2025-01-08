@@ -1,0 +1,47 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="VulnerableLibrariesLocal" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="isIgnoringEnabled" value="true" />
+      <option name="ignoredModules">
+        <list>
+          <option value="LSTMCSV" />
+          <option value="LSTMCSV" />
+          <option value="LSTMCSV" />
+          <option value="LSTMCSV" />
+          <option value="LSTMCSV" />
+          <option value="LSTMCSV" />
+          <option value="LSTMCSV" />
+          <option value="LSTMCSV" />
+          <option value="LSTMCSV" />
+        </list>
+      </option>
+      <option name="ignoredPackages">
+        <list>
+          <option value="commons-io:commons-io:2.7" />
+          <option value="org.apache.commons:commons-compress:1.21" />
+          <option value="commons-net:commons-net:3.1" />
+          <option value="com.fasterxml.jackson.core:jackson-databind:2.11.4" />
+          <option value="io.netty:netty-common:4.1.68.Final" />
+          <option value="org.json:json:20190722" />
+          <option value="io.netty:netty-handler:4.1.48.Final" />
+          <option value="io.netty:netty-codec:4.1.48.Final" />
+          <option value="io.netty:netty-codec-http:4.1.48.Final" />
+        </list>
+      </option>
+      <option name="ignoredReasons">
+        <list>
+          <option value="Not exploitable" />
+          <option value="Not exploitable" />
+          <option value="Not exploitable" />
+          <option value="Not exploitable" />
+          <option value="Not exploitable" />
+          <option value="Not exploitable" />
+          <option value="Not exploitable" />
+          <option value="Not exploitable" />
+          <option value="Not exploitable" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>

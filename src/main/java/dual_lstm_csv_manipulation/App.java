@@ -13,9 +13,9 @@ public class App
         System.out.println( "Hello World!" );
 
         System.out.println("este es el cambio");
-        System.out.println("otroe");
-        System.out.println("222");
-        System.out.println("otro mas");
+
+
+        CsvPreProcess.processCsv("pre-ACX.csv", "out.csv");
 
 
     }

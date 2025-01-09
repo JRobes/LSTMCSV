@@ -34,6 +34,7 @@ public class App
         CsvPreProcess.processCsv("pre-ACX.csv", "out.csv");
         char quote = '\"';
         char delim = ',';
+        char delet = 'r';
         //RecordReader rr = new CSVRecordReader(2, delim, quote);
         RecordReader rr = new CSVRecordReader(2, ',');
 

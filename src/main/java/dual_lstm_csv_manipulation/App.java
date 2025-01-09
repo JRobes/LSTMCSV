@@ -52,7 +52,7 @@ public class App
         TransformProcess tp = new TransformProcess.Builder(inputDataSchema)
                 //Let's remove some column we don't need
                 .removeColumns("CustomerID","MerchantID")
-                .doubleColumnsMathOp("Var", MathOp.Subtract, "max","min")
+                .doubleColumnsMathOp("Var", MathOp.Subtract, "Max","Min")
 
                 //Now, suppose we only want to analyze transactions involving merchants in USA or Canada. Let's filter out
                 // everthing except for those countries.

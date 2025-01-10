@@ -75,7 +75,8 @@ public class App
 
                 //However, our time column ("DateTimeString") isn't a String anymore. So let's rename it to something better:
                 .renameColumn("DateTimeString", "DateTime")
-
+                .transform(new SuffixToDoubleTransform("Vol"))
+                .transform(new PercentToDoubleTransform("Per"))
                 //At this point, we have our date/time format stored internally as a long value (Unix/Epoch format): milliseconds since 00:00.000 01/01/1970
                 //Suppose we only care about the hour of the day. Let's derive a new column for that, from the DateTime column
                 .transform(new DeriveColumnsFromTimeTransform.Builder("DateTime")

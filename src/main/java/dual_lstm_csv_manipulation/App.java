@@ -1,5 +1,8 @@
 package dual_lstm_csv_manipulation;
 
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.datavec.api.records.reader.RecordReader;
 import org.datavec.api.records.reader.impl.csv.CSVRecordReader;
 import org.datavec.api.transform.MathOp;
@@ -10,11 +13,13 @@ import org.datavec.api.transform.condition.column.DoubleColumnCondition;
 import org.datavec.api.transform.filter.ConditionFilter;
 import org.datavec.api.transform.schema.Schema;
 import org.datavec.api.transform.transform.time.DeriveColumnsFromTimeTransform;
+import org.datavec.api.util.ClassPathResource;
 import org.datavec.api.writable.DoubleWritable;
 import org.joda.time.DateTimeFieldType;
 import org.joda.time.DateTimeZone;
 
 import javax.sound.midi.Soundbank;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -24,8 +29,7 @@ import java.util.HashSet;
  */
 public class App 
 {
-    public static void main( String[] args )
-    {
+    public static void main( String[] args ) throws IOException {
         System.out.println( "Hello World!" );
 
         System.out.println("este es el cambio");
@@ -89,6 +93,19 @@ public class App
                 //We've finished with the sequence of operations we want to do: let's create the final TransformProcess object
                 .build();
 
+        Schema outputSchema = tp.getFinalSchema();
+
+        System.out.println("\n\n\nSchema after transforming data:");
+        System.out.println(outputSchema);
+
+        SparkConf conf = new SparkConf();
+        conf.setMaster("local[*]");
+        conf.setAppName("DataVec Example");
+
+        JavaSparkContext sc = new JavaSparkContext(conf);
+
+        String directory = new ClassPathResource("BasicDataVecExample/exampledata.csv").getFile().getParent(); //Normally just define your directory like "file:/..." or "hdfs:/..."
+        JavaRDD<String> stringData = sc.textFile(directory);
 
     }
 }

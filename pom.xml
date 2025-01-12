@@ -15,7 +15,9 @@
     <jfreechart.version>1.5.5</jfreechart.version>
   </properties>
 
+
   <dependencies>
+
     <!-- https://mvnrepository.com/artifact/org.datavec/datavec-api -->
     <dependency>
       <groupId>org.datavec</groupId>
@@ -67,11 +69,24 @@
       <artifactId>slf4j-api</artifactId>
       <version>2.0.16</version>
     </dependency>
-    <dependency>
+<!--    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-simple</artifactId>
       <version>2.0.13</version>
+    </dependency>-->
+    <!-- https://mvnrepository.com/artifact/org.datavec/datavec-spark -->
+    <dependency>
+      <groupId>org.datavec</groupId>
+      <artifactId>datavec-spark_2.12</artifactId>
+      <version>1.0.0-M2.1</version>
     </dependency>
+    <!-- https://mvnrepository.com/artifact/org.scala-lang/scala-library -->
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-library</artifactId>
+      <version>2.12.18-M2</version>
+    </dependency>
+
 
     <!-- https://mvnrepository.com/artifact/org.apache.spark/spark-core -->
     <dependency>
@@ -90,4 +105,5 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
 </project>

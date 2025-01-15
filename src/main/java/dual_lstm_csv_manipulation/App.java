@@ -18,22 +18,26 @@ import org.datavec.api.transform.transform.time.DeriveColumnsFromTimeTransform;
 import org.datavec.api.transform.transform.time.StringToTimeTransform;
 import org.datavec.api.writable.DoubleWritable;
 import org.datavec.api.writable.Writable;
+import org.datavec.api.split.FileSplit;
 import org.datavec.local.transforms.LocalTransformExecutor;
 import org.datavec.spark.functions.RecordReaderFunction;
 import org.datavec.spark.transform.SparkTransformExecutor;
 import org.datavec.spark.transform.misc.StringToWritablesFunction;
 import org.datavec.spark.transform.misc.WritablesToStringFunction;
+import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
 import org.joda.time.DateTimeFieldType;
 import org.joda.time.DateTimeZone;
 import org.nd4j.common.io.ClassPathResource;
 import org.nd4j.common.io.Resource;
+import org.nd4j.linalg.dataset.api.DataSet;
+import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.nd4j.linalg.dataset.api.preprocessor.NormalizerStandardize;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 import javax.sound.midi.Soundbank;
 import java.io.IOException;
@@ -47,7 +51,7 @@ import java.util.List;
  */
 public class App 
 {
-    public static void main( String[] args ) throws IOException, NoSuchFieldException, IllegalAccessException {
+    public static void main( String[] args ) throws IOException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         System.out.println( "Hello World!" );
 
 
@@ -119,41 +123,90 @@ public class App
         System.out.println("\n\n\nSchema after transforming data:");
         System.out.println(outputSchema);
 
-        SparkConf conf = new SparkConf();
-        conf.setMaster("local[*]");
-        conf.setAppName("DataVec Example");
+        // Paso 3: Leer los datos con CSVRecordReader
+        int skipNumLines = 1; // Saltar la primera línea (cabecera)
+        RecordReader recordReader = new CSVRecordReader(skipNumLines, ',');
+        recordReader.initialize(new FileSplit(new File("C:\\Users\\COTERENA\\IdeaProjects\\LSTMCSV\\ACX-short.csv")));
 
-        JavaSparkContext sc = new JavaSparkContext(conf);
-        Resource resource = new ClassPathResource("ACX.csv");
-        System.out.println("Absolute path :" + resource.getFile().getAbsolutePath());
+        // Paso 4: Almacenar los registros en una lista
+        List<List<Writable>> originalData = new ArrayList<>();
+        while (recordReader.hasNext()) {
+            originalData.add(recordReader.next());
+        }
 
-        String directory = new ClassPathResource("ACX.csv").getFile().getParent(); //Normally just define your directory like "file:/..." or "hdfs:/..."
-        JavaRDD<String> stringData = sc.textFile(directory);
+        // Paso 5: Aplicar el TransformProcess localmente
+        List<List<Writable>> transformedData = LocalTransformExecutor.execute(originalData, tp);
+
+        // Paso 6: Imprimir los datos transformados
+        for (List<Writable> record : transformedData) {
+            System.out.println(record);
+        }
+
+        // Paso 7: Convertir los datos transformados en un DataSetIterator
+        int batchSize = 10;
+        int labelIndex = 1; // Índice de la columna de etiquetas después de la transformación
+        int numClasses = 3;  // Número de clases para la clasificación
+
+        RecordReader transformedRecordReader = new CSVRecordReader();
+        transformedRecordReader.initialize(new FileSplit(new File("C:\\Users\\COTERENA\\IdeaProjects\\LSTMCSV\\ACX-short.csv")));
+
+        DataSetIterator iterator = new RecordReaderDataSetIterator(transformedRecordReader, batchSize, labelIndex, numClasses);
+
+        // Paso 8: Normalizar los datos
+        NormalizerStandardize normalizer = new NormalizerStandardize();
+        normalizer.fit(iterator);  // Calcular estadísticas de normalización
+        iterator.setPreProcessor(normalizer);
+
+        // Paso 9: Leer y procesar los datos
+        while (iterator.hasNext()) {
+            DataSet dataSet = iterator.next();
+            System.out.println(dataSet);
+        }
+
+
+
+
+
+
+
+
+
+
+        //SparkConf conf = new SparkConf();
+        //conf.setMaster("local[*]");
+        //conf.setAppName("DataVec Example");
+
+        //JavaSparkContext sc = new JavaSparkContext(conf);
+        //Resource resource = new ClassPathResource("ACX.csv");
+        //System.out.println("Absolute path :" + resource.getFile().getAbsolutePath());
+
+        //String directory = new ClassPathResource("ACX.csv").getFile().getParent(); //Normally just define your directory like "file:/..." or "hdfs:/..."
+        //JavaRDD<String> stringData = sc.textFile(directory);
 
 
         //We first need to parse this format. It's comma-delimited (CSV) format, so let's parse it using CSVRecordReader:
         //RecordReader rr = new CSVRecordReader(2, delim, quote);
-        RecordReader rr = new CSVRecordReader(2, ',', '"');
+        //RecordReader rr = new CSVRecordReader(2, ',', '"');
         //RecordReader rr = new CSVRecordReader();
-        JavaRDD<List<Writable>> parsedInputData = stringData.map(new StringToWritablesFunction(rr));
+        //JavaRDD<List<Writable>> parsedInputData = stringData.map(new StringToWritablesFunction(rr));
 
         //Now, let's execute the transforms we defined earlier:
         //JavaRDD<List<Writable>> processedData = SparkTransformExecutor.execute(parsedInputData, tp);
-        JavaRDD<List<Writable>> processedData = (JavaRDD<List<Writable>>) LocalTransformExecutor.execute((List<List<Writable>>) parsedInputData, tp);
+        //JavaRDD<List<Writable>> processedData = (JavaRDD<List<Writable>>) LocalTransformExecutor.execute((List<List<Writable>>) parsedInputData, tp);
         //For the sake of this example, let's collect the data locally and print it:
-        JavaRDD<String> processedAsString = processedData.map(new WritablesToStringFunction(","));
+        //avaRDD<String> processedAsString = processedData.map(new WritablesToStringFunction(","));
         //processedAsString.saveAsTextFile("file://your/local/save/path/here");   //To save locally
         //processedAsString.saveAsTextFile("hdfs://your/hdfs/save/path/here");   //To save to hdfs
 
-        List<String> processedCollected = processedAsString.collect();
-        List<String> inputDataCollected = stringData.collect();
+        //List<String> processedCollected = processedAsString.collect();
+        //List<String> inputDataCollected = stringData.collect();
 
 
-        System.out.println("\n\n---- Original Data ----");
-        for(String s : inputDataCollected) System.out.println(s);
+        //System.out.println("\n\n---- Original Data ----");
+        //for(String s : inputDataCollected) System.out.println(s);
 
-        System.out.println("\n\n---- Processed Data ----");
-        for(String s : processedCollected) System.out.println(s);
+        //System.out.println("\n\n---- Processed Data ----");
+        //for(String s : processedCollected) System.out.println(s);
 
 
         System.out.println("\n\nDONE");

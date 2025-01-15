@@ -16,16 +16,21 @@ import org.datavec.api.transform.schema.Schema;
 import org.datavec.api.transform.transform.condition.ConditionalReplaceValueTransform;
 import org.datavec.api.transform.transform.time.DeriveColumnsFromTimeTransform;
 import org.datavec.api.transform.transform.time.StringToTimeTransform;
-import org.datavec.api.util.ClassPathResource;
 import org.datavec.api.writable.DoubleWritable;
 import org.datavec.api.writable.Writable;
+import org.datavec.local.transforms.LocalTransformExecutor;
 import org.datavec.spark.functions.RecordReaderFunction;
 import org.datavec.spark.transform.SparkTransformExecutor;
 import org.datavec.spark.transform.misc.StringToWritablesFunction;
 import org.datavec.spark.transform.misc.WritablesToStringFunction;
 import org.joda.time.DateTimeFieldType;
 import org.joda.time.DateTimeZone;
+import org.nd4j.common.io.ClassPathResource;
+import org.nd4j.common.io.Resource;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -42,7 +47,7 @@ import java.util.List;
  */
 public class App 
 {
-    public static void main( String[] args ) throws IOException {
+    public static void main( String[] args ) throws IOException, NoSuchFieldException, IllegalAccessException {
         System.out.println( "Hello World!" );
 
 
@@ -104,7 +109,7 @@ public class App
                 //        .build())
 
                 //We no longer need our "DateTime" column, as we've extracted what we need from it. So let's remove it
-                //.removeColumns("DateTime")
+                .removeColumns("Per")
 
                 //We've finished with the sequence of operations we want to do: let's create the final TransformProcess object
                 .build();
@@ -119,19 +124,22 @@ public class App
         conf.setAppName("DataVec Example");
 
         JavaSparkContext sc = new JavaSparkContext(conf);
+        Resource resource = new ClassPathResource("ACX.csv");
+        System.out.println("Absolute path :" + resource.getFile().getAbsolutePath());
 
-        String directory = new ClassPathResource("pre-ACX.csv").getFile().getParent(); //Normally just define your directory like "file:/..." or "hdfs:/..."
+        String directory = new ClassPathResource("ACX.csv").getFile().getParent(); //Normally just define your directory like "file:/..." or "hdfs:/..."
         JavaRDD<String> stringData = sc.textFile(directory);
+
 
         //We first need to parse this format. It's comma-delimited (CSV) format, so let's parse it using CSVRecordReader:
         //RecordReader rr = new CSVRecordReader(2, delim, quote);
-        RecordReader rr = new CSVRecordReader(2, ',');
+        RecordReader rr = new CSVRecordReader(2, ',', '"');
         //RecordReader rr = new CSVRecordReader();
         JavaRDD<List<Writable>> parsedInputData = stringData.map(new StringToWritablesFunction(rr));
 
         //Now, let's execute the transforms we defined earlier:
-        JavaRDD<List<Writable>> processedData = SparkTransformExecutor.execute(parsedInputData, tp);
-
+        //JavaRDD<List<Writable>> processedData = SparkTransformExecutor.execute(parsedInputData, tp);
+        JavaRDD<List<Writable>> processedData = (JavaRDD<List<Writable>>) LocalTransformExecutor.execute((List<List<Writable>>) parsedInputData, tp);
         //For the sake of this example, let's collect the data locally and print it:
         JavaRDD<String> processedAsString = processedData.map(new WritablesToStringFunction(","));
         //processedAsString.saveAsTextFile("file://your/local/save/path/here");   //To save locally

@@ -2,14 +2,19 @@ package dual_lstm_csv_manipulation;
 
 import org.datavec.api.records.reader.RecordReader;
 import org.datavec.api.records.reader.impl.csv.CSVRecordReader;
+import org.datavec.api.transform.MathOp;
 import org.datavec.api.transform.TransformProcess;
 import org.datavec.api.transform.schema.Schema;
 import org.datavec.api.transform.transform.string.ReplaceStringTransform;
 import org.datavec.api.writable.Writable;
 import org.datavec.api.split.FileSplit;
 import org.datavec.local.transforms.LocalTransformExecutor;
+import org.joda.time.DateTimeZone;
+import org.nd4j.common.io.ClassPathResource;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 import java.io.IOException;
@@ -21,11 +26,17 @@ import java.util.List;
  */
 public class App 
 {
-    static String path = "C:\\Users\\jrobes\\IdeaProjects\\LSTMCSV\\ACX-short.csv";
-
+    //static String path = "C:\\Users\\jrobes\\IdeaProjects\\LSTMCSV\\ACX-short.csv";
+    static String path = "C:\\Users\\COTERENA\\IdeaProjects\\LSTMCSV\\ACX-short.csv";
     public static void main( String[] args ) throws IOException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         System.out.println( "Hello World!" );
+        String customerInfoPath = new ClassPathResource("").getFile().getPath();
+        System.out.println(customerInfoPath);
 
+
+        Path path2 = Paths.get(customerInfoPath);
+        Path twoLevelsUp = path2.getParent().getParent(); // Retrocede dos niveles
+        System.out.println("Dos niveles arriba: " + twoLevelsUp.toAbsolutePath());
 
         //CsvPreProcess.processCsv("pre-ACX.csv", "out.csv");
         char quote = '\"';
@@ -66,6 +77,9 @@ public class App
                 .transform(new ReplaceStringTransform("Per", replacements))
                 .transform(new PercentTransform("Per"))
                 .convertToDouble("Per")
+                .doubleColumnsMathOp("Diff", MathOp.Subtract, "Max", "Min")
+                .stringToTimeTransform("DateTimeString","DD.MM.YYYY", DateTimeZone.UTC)
+                .renameColumn("DateTimeString", "Date")
                 .build();
         System.out.println("\n\nAntes de tp.getFinalSchema:");
         Schema outputSchema = tp.getFinalSchema();

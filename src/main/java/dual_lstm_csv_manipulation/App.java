@@ -75,6 +75,7 @@ public class App
                 .doubleColumnsMathOp("Diff", MathOp.Subtract, "Max", "Min")
                 .stringToTimeTransform("DateTimeString","DD.MM.YYYY", DateTimeZone.UTC)
                 .renameColumn("DateTimeString", "Date")
+                .removeColumns("Open", "Max", "Min")
                 .build();
 
         Schema outputSchema = tp.getFinalSchema();

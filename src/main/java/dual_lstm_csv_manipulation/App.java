@@ -1,13 +1,21 @@
 package dual_lstm_csv_manipulation;
 
 import org.datavec.api.records.reader.RecordReader;
+import org.datavec.api.records.reader.impl.collection.CollectionRecordReader;
+import org.datavec.api.records.reader.impl.collection.CollectionSequenceRecordReader;
 import org.datavec.api.records.reader.impl.csv.CSVRecordReader;
 import org.datavec.api.transform.MathOp;
 import org.datavec.api.transform.TransformProcess;
+import org.datavec.api.transform.analysis.DataAnalysis;
+import org.datavec.api.transform.analysis.columns.ColumnAnalysis;
+import org.datavec.api.transform.condition.column.NullWritableColumnCondition;
+import org.datavec.api.transform.filter.ConditionFilter;
+import org.datavec.api.transform.filter.FilterInvalidValues;
 import org.datavec.api.transform.schema.Schema;
 import org.datavec.api.transform.transform.string.ReplaceStringTransform;
 import org.datavec.api.writable.Writable;
 import org.datavec.api.split.FileSplit;
+import org.datavec.local.transforms.AnalyzeLocal;
 import org.datavec.local.transforms.LocalTransformExecutor;
 import org.joda.time.DateTimeZone;
 import org.nd4j.common.io.ClassPathResource;
@@ -43,7 +51,7 @@ public class App
 
         Schema inputDataSchema = new Schema.Builder()
                 .addColumnString("DateTimeString")
-                .addColumnString("Last")
+                .addColumnString("Last", null, 1, 200)
                 .addColumnString("Open")
                 .addColumnString("Max")
                 .addColumnString("Min")
@@ -58,6 +66,17 @@ public class App
         replacements.put(",", "."); // Reemplazar ',' por '.'
 
         TransformProcess tp = new TransformProcess.Builder(inputDataSchema)
+                .filter(new FilterInvalidValues("Open"))
+                .filter(new ConditionFilter(new NullWritableColumnCondition("Open")))
+
+                //.filter(new NullWritableColumnCondition("DateTimeString"))
+
+                //.filter(new NullWritableColumnCondition("Open"))
+                //.filter(new NullWritableColumnCondition("Max"))
+                //.filter(new NullWritableColumnCondition("Min"))
+                //.filter(new NullWritableColumnCondition("Vol"))
+                //.filter(new NullWritableColumnCondition("Per"))
+
                 .transform(new ReplaceStringTransform("Last", replacements))
                 .convertToDouble("Last")
                 .transform(new ReplaceStringTransform("Open", replacements))
@@ -76,6 +95,7 @@ public class App
                 .stringToTimeTransform("DateTimeString","DD.MM.YYYY", DateTimeZone.UTC)
                 .renameColumn("DateTimeString", "Date")
                 .removeColumns("Open", "Max", "Min")
+                .filter(new NullWritableColumnCondition("Last"))
                 .build();
 
         Schema outputSchema = tp.getFinalSchema();
@@ -94,7 +114,19 @@ public class App
         while (recordReader.hasNext()) {
             originalData.add(recordReader.next());
         }
+/*
+        List<List<Writable>> transformedData = new ArrayList<>();
+        for (List<Writable> record : data) {
+            if (transformProcess.isValid(record)) { // Solo incluir registros válidos
+                transformedData.add(transformProcess.execute(record));
+            }
+        }
 
+        for(List<Writable> rec : originalData){
+            tp.
+        }
+
+        */
         // Paso 5: Aplicar el TransformProcess localmente
         List<List<Writable>> transformedData = LocalTransformExecutor.execute(originalData, tp);
 
@@ -103,6 +135,16 @@ public class App
         for (List<Writable> record : transformedData) {
             System.out.println(record);
         }
+
+        // Analizar los datos
+        RecordReader recordReaderNew = new CollectionRecordReader(transformedData);
+        DataAnalysis dataAnalysis = AnalyzeLocal.analyze(outputSchema, recordReaderNew);
+        System.out.println("Análisis del conjunto de datos:");
+        System.out.println(dataAnalysis);
+        ColumnAnalysis salaryAnalysis = dataAnalysis.getColumnAnalysis("Diff");
+        System.out.println("Análisis de la columna 'Diff':");
+        System.out.println(salaryAnalysis);
+
 
 
 
@@ -126,8 +168,6 @@ public class App
          //   DataSet dataSet = iterator.next();
          //   System.out.println(dataSet);
        // }
-
-
 
 
         System.out.println("\n\nDONE");

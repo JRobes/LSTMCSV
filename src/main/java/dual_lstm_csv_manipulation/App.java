@@ -26,27 +26,22 @@ import java.util.List;
  */
 public class App 
 {
+    static String fileName = "ACX-short.csv";
     //static String path = "C:\\Users\\jrobes\\IdeaProjects\\LSTMCSV\\ACX-short.csv";
-    static String path = "C:\\Users\\COTERENA\\IdeaProjects\\LSTMCSV\\ACX-short.csv";
+    //static String path = "C:\\Users\\COTERENA\\IdeaProjects\\LSTMCSV\\ACX-short.csv";
     public static void main( String[] args ) throws IOException, NoSuchFieldException, IllegalAccessException, InterruptedException {
+
         System.out.println( "Hello World!" );
-        String customerInfoPath = new ClassPathResource("").getFile().getPath();
-        System.out.println(customerInfoPath);
+        String classPath = new ClassPathResource("").getFile().getPath();
+        //System.out.println(classPath);
 
+        //Path path2 = Paths.get(classPath);
+        Path path2LevelsUp = Paths.get(classPath).getParent().getParent(); // Retrocede dos niveles
 
-        Path path2 = Paths.get(customerInfoPath);
-        Path twoLevelsUp = path2.getParent().getParent(); // Retrocede dos niveles
-        System.out.println("Dos niveles arriba: " + twoLevelsUp.toAbsolutePath());
-
-        //CsvPreProcess.processCsv("pre-ACX.csv", "out.csv");
-        char quote = '\"';
-        char delim = ',';
-        char delet = 'r';
-        //RecordReader rr = new CSVRecordReader(2, delim, quote);
-        //RecordReader rr = new CSVRecordReader(2, ',');
+        System.out.println("Dos niveles arriba: " + path2LevelsUp.toAbsolutePath() + File.separator + fileName);
+        String path = path2LevelsUp.toAbsolutePath() + File.separator + fileName;
 
         Schema inputDataSchema = new Schema.Builder()
-                //We can define a single column
                 .addColumnString("DateTimeString")
                 .addColumnString("Last")
                 .addColumnString("Open")
@@ -81,7 +76,7 @@ public class App
                 .stringToTimeTransform("DateTimeString","DD.MM.YYYY", DateTimeZone.UTC)
                 .renameColumn("DateTimeString", "Date")
                 .build();
-        System.out.println("\n\nAntes de tp.getFinalSchema:");
+
         Schema outputSchema = tp.getFinalSchema();
 
         System.out.println("\n\nSchema after transforming data:");
@@ -97,7 +92,6 @@ public class App
         List<List<Writable>> originalData = new ArrayList<>();
         while (recordReader.hasNext()) {
             originalData.add(recordReader.next());
-            //System.out.println(recordReader.next());
         }
 
         // Paso 5: Aplicar el TransformProcess localmente
@@ -108,6 +102,8 @@ public class App
         for (List<Writable> record : transformedData) {
             System.out.println(record);
         }
+
+
 
         // Paso 7: Convertir los datos transformados en un DataSetIterator
         //int batchSize = 10;

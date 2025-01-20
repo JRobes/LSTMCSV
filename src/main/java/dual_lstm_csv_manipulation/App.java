@@ -50,12 +50,13 @@ public class App
         String path = path2LevelsUp.toAbsolutePath() + File.separator + fileName;
 
         Schema inputDataSchema = new Schema.Builder()
-                .addColumnString("DateTimeString")
-                .addColumnString("Last", null, 1, 200)
-                .addColumnString("Open")
-                .addColumnString("Max")
-                .addColumnString("Min")
-                .addColumnsString("Vol", "Per")
+                .addColumnString("DateTimeString", ".*", 1, null)
+                .addColumnString("Last", ".*", 1, null)
+                .addColumnString("Open", ".*", 1, null)
+                .addColumnString("Max", ".*", 1, null)
+                .addColumnString("Min", ".*", 1, null)
+                .addColumnString("Vol", ".*", 1, null)
+                .addColumnString("Per", ".*", 1, null)
                 .build();
 
         System.out.println("Input data schema details:");
@@ -66,16 +67,8 @@ public class App
         replacements.put(",", "."); // Reemplazar ',' por '.'
 
         TransformProcess tp = new TransformProcess.Builder(inputDataSchema)
-                .filter(new FilterInvalidValues("Open"))
-                .filter(new ConditionFilter(new NullWritableColumnCondition("Open")))
 
-                //.filter(new NullWritableColumnCondition("DateTimeString"))
-
-                //.filter(new NullWritableColumnCondition("Open"))
-                //.filter(new NullWritableColumnCondition("Max"))
-                //.filter(new NullWritableColumnCondition("Min"))
-                //.filter(new NullWritableColumnCondition("Vol"))
-                //.filter(new NullWritableColumnCondition("Per"))
+                .filter(new FilterInvalidValues("DateTimeString", "Last", "Open", "Max","Min", "Vol","Per"))
 
                 .transform(new ReplaceStringTransform("Last", replacements))
                 .convertToDouble("Last")
@@ -114,19 +107,7 @@ public class App
         while (recordReader.hasNext()) {
             originalData.add(recordReader.next());
         }
-/*
-        List<List<Writable>> transformedData = new ArrayList<>();
-        for (List<Writable> record : data) {
-            if (transformProcess.isValid(record)) { // Solo incluir registros válidos
-                transformedData.add(transformProcess.execute(record));
-            }
-        }
 
-        for(List<Writable> rec : originalData){
-            tp.
-        }
-
-        */
         // Paso 5: Aplicar el TransformProcess localmente
         List<List<Writable>> transformedData = LocalTransformExecutor.execute(originalData, tp);
 

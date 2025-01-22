@@ -9,6 +9,7 @@ import org.datavec.api.transform.analysis.DataAnalysis;
 import org.datavec.api.transform.analysis.columns.ColumnAnalysis;
 import org.datavec.api.transform.condition.column.NullWritableColumnCondition;
 import org.datavec.api.transform.filter.FilterInvalidValues;
+import org.datavec.api.transform.join.Join;
 import org.datavec.api.transform.schema.Schema;
 import org.datavec.api.transform.transform.string.ReplaceStringTransform;
 import org.datavec.api.writable.Writable;
@@ -126,9 +127,19 @@ public class App
             originalDataIBEX.add(recordReaderIBEX.next());
         }
 
+        // Definir la join
+        Join join = new Join.Builder(Join.JoinType.Inner)
+                .setJoinColumns("Date")
+                .setSchemas(outputSchema, outputSchemaIBEX)
+
+                .build();
+
+
         // Paso 5: Aplicar el TransformProcess localmente
         List<List<Writable>> transformedData = LocalTransformExecutor.execute(originalData, tp);
         List<List<Writable>> transformedDataIBEX = LocalTransformExecutor.execute(originalDataIBEX, tpIBEX);
+
+        List<List<Writable>> joinedData = LocalTransformExecutor.executeJoin(join, transformedData, transformedDataIBEX);
 
 
         // Paso 6: Imprimir los datos transformados
@@ -140,6 +151,14 @@ public class App
         System.out.println();
         System.out.println("Datos transformados...\nNúmero de filas: " + transformedDataIBEX.size());
         for (List<Writable> record : transformedDataIBEX) {
+            System.out.println(record);
+        }
+
+
+        System.out.println();
+        System.out.println();
+        System.out.println("Datos Unidos...\nNúmero de filas: " + joinedData.size());
+        for (List<Writable> record : joinedData) {
             System.out.println(record);
         }
 

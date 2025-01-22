@@ -26,6 +26,8 @@ import java.util.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Hello world!
@@ -162,16 +164,7 @@ public class App
             System.out.println(record);
         }
 
-        // Analizar los datos
-        RecordReader recordReaderNew = new CollectionRecordReader(transformedData);
-        DataAnalysis dataAnalysis = AnalyzeLocal.analyze(outputSchema, recordReaderNew);
-        System.out.println("Análisis del conjunto de datos:");
-        System.out.println(dataAnalysis);
-        ColumnAnalysis salaryAnalysis = dataAnalysis.getColumnAnalysis("Diff");
-        System.out.println("Análisis de la columna 'Diff':");
-        System.out.println(salaryAnalysis);
-
-        //joinedData.sort(Comparator.comparingInt(row -> row.get(1).toInt()));
+        //joinedData.sort(Comparator.comparing(row -> row.get(1).toInt()));
         System.out.println();
         System.out.println();
         System.out.println("Datos Unidos...\nNúmero de filas: " + joinedData.size());
@@ -182,10 +175,47 @@ public class App
         System.out.println();
         System.out.println("Transformed data size: " + transformedData.size());
         for (List<Writable> record : transformedData) {
-            System.out.println(record.get(0).toInt());
-            System.out.println(record.size());
+            System.out.println(record);
+            //System.out.println(record.size());
         }
 
+
+        Map<Writable, List<Writable>> myMap = new HashMap<>();
+
+        myMap = convertList2Map(joinedData);
+
+        List<List<Writable>> valueList = new ArrayList<>(myMap.values());
+
+
+        System.out.println();
+        System.out.println();
+        System.out.println("Transformed data size sorted: " + valueList.size());
+        for (List<Writable> record : valueList) {
+            System.out.println(record);
+            //System.out.println(record.size());
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // Analizar los datos
+        RecordReader recordReaderNew = new CollectionRecordReader(transformedData);
+        DataAnalysis dataAnalysis = AnalyzeLocal.analyze(outputSchema, recordReaderNew);
+        System.out.println("Análisis del conjunto de datos:");
+        System.out.println(dataAnalysis);
+        ColumnAnalysis salaryAnalysis = dataAnalysis.getColumnAnalysis("Diff");
+        System.out.println("Análisis de la columna 'Diff':");
+        System.out.println(salaryAnalysis);
 
 
 
@@ -213,5 +243,13 @@ public class App
 
         System.out.println("\n\nDONE");
 
+    }
+
+    public static Map<Writable, List<Writable>> convertList2Map(List<List<Writable>> list) {
+        Map<Writable, List<Writable>> map = new HashMap<>();
+        for (List<Writable> record : list) {
+            map.put(record.get(0), record);
+        }
+        return map;
     }
 }

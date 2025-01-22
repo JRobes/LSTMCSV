@@ -171,6 +171,21 @@ public class App
         System.out.println("Análisis de la columna 'Diff':");
         System.out.println(salaryAnalysis);
 
+        //joinedData.sort(Comparator.comparingInt(row -> row.get(1).toInt()));
+        System.out.println();
+        System.out.println();
+        System.out.println("Datos Unidos...\nNúmero de filas: " + joinedData.size());
+        for (List<Writable> record : joinedData) {
+            System.out.println(record);
+        }
+        System.out.println();
+        System.out.println();
+        System.out.println("Transformed data size: " + transformedData.size());
+        for (List<Writable> record : transformedData) {
+            System.out.println(record.get(0).toInt());
+            System.out.println(record.size());
+        }
+
 
 
 

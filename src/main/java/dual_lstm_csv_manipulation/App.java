@@ -12,6 +12,7 @@ import org.datavec.api.transform.filter.FilterInvalidValues;
 import org.datavec.api.transform.join.Join;
 import org.datavec.api.transform.schema.Schema;
 import org.datavec.api.transform.transform.string.ReplaceStringTransform;
+import org.datavec.api.writable.LongWritable;
 import org.datavec.api.writable.Writable;
 import org.datavec.api.split.FileSplit;
 import org.datavec.local.transforms.AnalyzeLocal;
@@ -63,7 +64,7 @@ public class App
                 .build();
 
         System.out.println("Input data schema details:");
-        System.out.println(inputDataSchema);
+        //System.out.println(inputDataSchema);
 
         // Crear el TransformProcess
         //Map<String, String> replacements = new HashMap<>();
@@ -106,8 +107,8 @@ public class App
         Schema outputSchemaIBEX = tpIBEX.getFinalSchema();
 
         System.out.println("\n\nSchemas after transforming data:");
-        System.out.println(outputSchema);
-        System.out.println(outputSchemaIBEX);
+        //System.out.println(outputSchema);
+        //System.out.println(outputSchemaIBEX);
 
         // Paso 3: Leer los datos con CSVRecordReader
         int skipNumLines = 1; // Saltar la primera línea (cabecera)
@@ -133,7 +134,6 @@ public class App
         Join join = new Join.Builder(Join.JoinType.Inner)
                 .setJoinColumns("Date")
                 .setSchemas(outputSchema, outputSchemaIBEX)
-
                 .build();
 
 
@@ -151,7 +151,7 @@ public class App
         }
         System.out.println();
         System.out.println();
-        System.out.println("Datos transformados...\nNúmero de filas: " + transformedDataIBEX.size());
+        System.out.println("Datos transformados IBEX...\nNúmero de filas: " + transformedDataIBEX.size());
         for (List<Writable> record : transformedDataIBEX) {
             System.out.println(record);
         }
@@ -168,43 +168,29 @@ public class App
         System.out.println();
         System.out.println();
         System.out.println("Datos Unidos...\nNúmero de filas: " + joinedData.size());
+
         for (List<Writable> record : joinedData) {
             System.out.println(record);
         }
-        System.out.println();
-        System.out.println();
-        System.out.println("Transformed data size: " + transformedData.size());
-        for (List<Writable> record : transformedData) {
-            System.out.println(record);
-            //System.out.println(record.size());
-        }
-
-
-        Map<Writable, List<Writable>> myMap = new HashMap<>();
-
-        myMap = convertList2Map(joinedData);
-
-        List<List<Writable>> valueList = new ArrayList<>(myMap.values());
-
-
-        System.out.println();
-        System.out.println();
-        System.out.println("Transformed data size sorted: " + valueList.size());
-        for (List<Writable> record : valueList) {
-            System.out.println(record);
-            //System.out.println(record.size());
-        }
 
 
 
 
 
 
+        Collections.sort(transformedData, new Comparator<List<Writable>>() {
+            @Override
+            public int compare(List<Writable> o1, List<Writable> o2) {
+                Writable date1 = o1.get(0);
+                Writable date2 = o2.get(0);
 
+                Long n1 = (Long)date1.toLong();
+                Long n2 = (Long)date2.toLong();
+                return n1.compareTo(n2);
 
+            }
 
-
-
+        });
 
 
 

@@ -19,6 +19,12 @@ import org.datavec.local.transforms.AnalyzeLocal;
 import org.datavec.local.transforms.LocalTransformExecutor;
 import org.joda.time.DateTimeZone;
 import org.nd4j.common.io.ClassPathResource;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.dataset.DataSet;
+import org.nd4j.linalg.dataset.api.preprocessor.NormalizerMinMaxScaler;
+import org.nd4j.linalg.factory.Nd4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -36,6 +42,7 @@ import java.util.stream.Collectors;
  */
 public class App 
 {
+    private static Logger log = LoggerFactory.getLogger(App.class);
     static String fileName = "ACX-short.csv";
     static String fileNameIBEX = "IBEX35-short.csv";
     //static String path = "C:\\Users\\jrobes\\IdeaProjects\\LSTMCSV\\ACX-short.csv";
@@ -43,6 +50,7 @@ public class App
     public static void main( String[] args ) throws IOException, NoSuchFieldException, IllegalAccessException, InterruptedException {
 
         System.out.println( "Hello World!" );
+        log.warn("Hello from the logger");
         String classPath = new ClassPathResource("").getFile().getPath();
         //System.out.println(classPath);
 
@@ -155,6 +163,10 @@ public class App
         }
 
 
+
+
+
+
         //List<List<Writable>> joinedData = LocalTransformExecutor.executeJoin(join, transformedData, transformedDataIBEX);
         List<List<Writable>> joinedData = new ArrayList<>();
 
@@ -175,6 +187,44 @@ public class App
         for (List<Writable> record : joinedData) {
             System.out.println(record);
         }
+        int numFeatures = 5;
+        int numLabels = 1;
+
+        double[][] featureMatrix = new double[joinedData.size()][numFeatures];
+        double[][] labelMatrix = new double[transformedData.size()][numLabels];
+
+        for (int rowIndex = 0; rowIndex < joinedData.size(); rowIndex++) {
+            List<Writable> row = joinedData.get(rowIndex);
+
+            // Extraer características
+            for (int colIndex = 0; colIndex < numFeatures; colIndex++) {
+                featureMatrix[rowIndex][colIndex] = row.get(colIndex).toDouble();
+            }
+            // Extraer etiquetas
+            for (int colIndex = 0; colIndex < numLabels; colIndex++) {
+                labelMatrix[rowIndex][colIndex] = row.get(numFeatures + colIndex).toDouble();
+            }
+
+        }
+
+        INDArray featureArray = Nd4j.create(featureMatrix);
+        INDArray labelArray = Nd4j.create(labelMatrix);
+
+
+        //INDArray featureArray = Nd4j.create(joinedData);
+        DataSet dataSet = new DataSet(featureArray, labelArray);
+
+        // Imprimir el DataSet
+        System.out.println("Features:");
+        System.out.println(dataSet.getFeatures());
+        System.out.println("Labels:");
+        System.out.println(dataSet.getLabels());
+
+
+        //NormalizerMinMaxScaler preProcessor = new NormalizerMinMaxScaler();
+        //preProcessor.fit(dataSet);
+
+
 
 
 /*
@@ -194,7 +244,7 @@ public class App
         });
 */
 
-
+/*
         // Analizar los datos
         RecordReader recordReaderNew = new CollectionRecordReader(transformedData);
         DataAnalysis dataAnalysis = AnalyzeLocal.analyze(outputSchema, recordReaderNew);
@@ -204,7 +254,7 @@ public class App
         System.out.println("Análisis de la columna 'Diff':");
         System.out.println(salaryAnalysis);
 
-
+*/
 
         // Paso 7: Convertir los datos transformados en un DataSetIterator
         //int batchSize = 10;

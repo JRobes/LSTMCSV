@@ -223,6 +223,8 @@ public class App
         System.out.println(dataSet.getLabels());
 
 
+        //dataSet.getRange(0, ).splitTestAndTrain(23);
+
         //NormalizerMinMaxScaler preProcessor = new NormalizerMinMaxScaler();
         //preProcessor.fit(dataSet);
 

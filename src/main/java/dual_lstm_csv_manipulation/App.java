@@ -189,20 +189,22 @@ public class App
         }
         int numFeatures = 5;
         int numLabels = 1;
+        int foreseenDays = 1;
 
-        double[][] featureMatrix = new double[joinedData.size()][numFeatures];
-        double[][] labelMatrix = new double[transformedData.size()][numLabels];
+        double[][] featureMatrix = new double[joinedData.size()-foreseenDays][numFeatures];
+        double[][] labelMatrix = new double[transformedData.size()-foreseenDays][numLabels];
 
-        for (int rowIndex = 0; rowIndex < joinedData.size(); rowIndex++) {
+        for (int rowIndex = foreseenDays; rowIndex < joinedData.size(); rowIndex++) {
             List<Writable> row = joinedData.get(rowIndex);
 
             // Extraer características
             for (int colIndex = 0; colIndex < numFeatures; colIndex++) {
-                featureMatrix[rowIndex][colIndex] = row.get(colIndex).toDouble();
+                featureMatrix[rowIndex-foreseenDays][colIndex] = row.get(colIndex+1).toDouble();
             }
             // Extraer etiquetas
             for (int colIndex = 0; colIndex < numLabels; colIndex++) {
-                labelMatrix[rowIndex][colIndex] = row.get(numFeatures + colIndex).toDouble();
+                List<Writable> row2 = joinedData.get(rowIndex-foreseenDays);
+                labelMatrix[rowIndex-foreseenDays][colIndex] = row2.get(1).toDouble();
             }
 
         }

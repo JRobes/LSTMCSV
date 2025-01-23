@@ -141,8 +141,6 @@ public class App
         List<List<Writable>> transformedData = LocalTransformExecutor.execute(originalData, tp);
         List<List<Writable>> transformedDataIBEX = LocalTransformExecutor.execute(originalDataIBEX, tpIBEX);
 
-        List<List<Writable>> joinedData = LocalTransformExecutor.executeJoin(join, transformedData, transformedDataIBEX);
-
 
         // Paso 6: Imprimir los datos transformados
         System.out.println("Datos transformados...\nNúmero de filas: " + transformedData.size());
@@ -157,6 +155,20 @@ public class App
         }
 
 
+        //List<List<Writable>> joinedData = LocalTransformExecutor.executeJoin(join, transformedData, transformedDataIBEX);
+        List<List<Writable>> joinedData = new ArrayList<>();
+
+        //List<List<Writable>> joinedData = new ArrayList<>();
+        for (List<Writable> leftRow : transformedData) {
+            for (List<Writable> rightRow : transformedDataIBEX) {
+                if (leftRow.get(0).toString().equals(rightRow.get(0).toString())) { // Comparar la columna "id"
+                    List<Writable> joinedRow = new ArrayList<>(leftRow);
+                    joinedRow.addAll(rightRow.subList(1, rightRow.size())); // Excluir la columna "id" duplicada
+                    joinedData.add(joinedRow);
+                }
+            }
+        }
+
         System.out.println();
         System.out.println();
         System.out.println("Datos Unidos...\nNúmero de filas: " + joinedData.size());
@@ -164,19 +176,8 @@ public class App
             System.out.println(record);
         }
 
-        //joinedData.sort(Comparator.comparing(row -> row.get(1).toInt()));
-        System.out.println();
-        System.out.println();
-        System.out.println("Datos Unidos...\nNúmero de filas: " + joinedData.size());
 
-        for (List<Writable> record : joinedData) {
-            System.out.println(record);
-        }
-
-
-
-
-
+/*
 
         Collections.sort(transformedData, new Comparator<List<Writable>>() {
             @Override
@@ -191,7 +192,7 @@ public class App
             }
 
         });
-
+*/
 
 
         // Analizar los datos

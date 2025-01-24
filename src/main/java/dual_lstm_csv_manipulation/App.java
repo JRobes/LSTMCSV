@@ -21,6 +21,7 @@ import org.joda.time.DateTimeZone;
 import org.nd4j.common.io.ClassPathResource;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
+import org.nd4j.linalg.dataset.SplitTestAndTrain;
 import org.nd4j.linalg.dataset.api.preprocessor.NormalizerMinMaxScaler;
 import org.nd4j.linalg.factory.Nd4j;
 import org.slf4j.Logger;
@@ -191,6 +192,8 @@ public class App
         int numLabels = 1;
         int foreseenDays = 1;
 
+        double percentOfTraining = 0.8;
+
         double[][] featureMatrix = new double[joinedData.size()-foreseenDays][numFeatures];
         double[][] labelMatrix = new double[transformedData.size()-foreseenDays][numLabels];
 
@@ -213,14 +216,36 @@ public class App
         INDArray labelArray = Nd4j.create(labelMatrix);
 
 
+
+
         //INDArray featureArray = Nd4j.create(joinedData);
         DataSet dataSet = new DataSet(featureArray, labelArray);
+        System.out.println("Número de entradas (columnas) DataSet: " + dataSet.numInputs());
+        System.out.println("Número de examples (filas) DataSet: " + dataSet.numExamples());
+        System.out.println("Número de outcomes DataSet: " + dataSet.numOutcomes());
+        int numRows = dataSet.numExamples();
+        double num = dataSet.numExamples()*percentOfTraining;
+        int ff = (int)((long)num);
+        System.out.println("Valor entero: " + ff);
+
+        DataSet testDt = (DataSet) dataSet.getRange(0, numRows - ff);
+        System.out.println("Test dataSet features:");
+        System.out.println(testDt.getFeatures());
+        System.out.println("Test dataSet labels:");
+        System.out.println(testDt.getLabels());
+
+        //SplitTestAndTrain stt = dataSet.splitTestAndTrain(percentOfTraining);
+        //stt.setTest();
+        //stt.setTrain();
 
         // Imprimir el DataSet
         System.out.println("Features:");
         System.out.println(dataSet.getFeatures());
         System.out.println("Labels:");
         System.out.println(dataSet.getLabels());
+
+
+
 
 
         //dataSet.getRange(0, ).splitTestAndTrain(23);

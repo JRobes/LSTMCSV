@@ -24,6 +24,7 @@ import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.SplitTestAndTrain;
 import org.nd4j.linalg.dataset.api.preprocessor.NormalizerMinMaxScaler;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -214,9 +215,14 @@ public class App
 
         INDArray featureArray = Nd4j.create(featureMatrix);
         INDArray labelArray = Nd4j.create(labelMatrix);
+        System.out.println("#####################################################");
+        System.out.println("INDArray feature: \n" + featureArray);
 
-
-
+        //We can select arbitrary subsets, using INDArray indexing:
+        //All columns, first 3 rows (note that internal here is columns 0 inclusive to 3 exclusive)
+        INDArray featureTrain = featureArray.get(NDArrayIndex.interval(2,NDArrayIndex.()), NDArrayIndex.all());
+        System.out.println("#####################################################");
+        System.out.println(featureTrain);
 
         //INDArray featureArray = Nd4j.create(joinedData);
         DataSet dataSet = new DataSet(featureArray, labelArray);
@@ -226,17 +232,7 @@ public class App
         int numRows = dataSet.numExamples();
         double num = dataSet.numExamples()*percentOfTraining;
         int ff = (int)((long)num);
-        System.out.println("Valor entero: " + ff);
-
-        DataSet testDt = (DataSet) dataSet.getRange(0, numRows - ff);
-        System.out.println("Test dataSet features:");
-        System.out.println(testDt.getFeatures());
-        System.out.println("Test dataSet labels:");
-        System.out.println(testDt.getLabels());
-
-        //SplitTestAndTrain stt = dataSet.splitTestAndTrain(percentOfTraining);
-        //stt.setTest();
-        //stt.setTrain();
+        System.out.println("Valor entero para dividir el dataset: " + ff);
 
         // Imprimir el DataSet
         System.out.println("Features:");
@@ -244,14 +240,24 @@ public class App
         System.out.println("Labels:");
         System.out.println(dataSet.getLabels());
 
+        DataSet trainData= (DataSet) dataSet.getRange(1, 5);
+        System.out.println("Train dataSet features:");
+        System.out.println(trainData.getFeatures());
+        System.out.println("Train dataSet labels:");
+        System.out.println(trainData.getLabels());
+
+        DataSet testData= (DataSet) dataSet.getRange(0, 2);
+        System.out.println("Test dataSet features:");
+        System.out.println(testData.getFeatures());
+        System.out.println("Test dataSet labels:");
+        System.out.println(testData.getLabels());
+
+        NormalizerMinMaxScaler normalizer = new NormalizerMinMaxScaler();
+        //normalizer.fit(trainingData);           //Collect the statistics (mean/stdev) from the training data. This does not modify the input data
+        //normalizer.transform(trainingData);     //Apply normalization to the training data
+        //normalizer.transform(testData);         //Apply normalization to the test data. This is using statistics calculated from the *training* set
 
 
-
-
-        //dataSet.getRange(0, ).splitTestAndTrain(23);
-
-        //NormalizerMinMaxScaler preProcessor = new NormalizerMinMaxScaler();
-        //preProcessor.fit(dataSet);
 
 
 

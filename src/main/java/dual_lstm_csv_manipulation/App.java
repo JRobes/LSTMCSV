@@ -1,27 +1,22 @@
 package dual_lstm_csv_manipulation;
 
 import org.datavec.api.records.reader.RecordReader;
-import org.datavec.api.records.reader.impl.collection.CollectionRecordReader;
 import org.datavec.api.records.reader.impl.csv.CSVRecordReader;
 import org.datavec.api.transform.MathOp;
 import org.datavec.api.transform.TransformProcess;
-import org.datavec.api.transform.analysis.DataAnalysis;
-import org.datavec.api.transform.analysis.columns.ColumnAnalysis;
+
 import org.datavec.api.transform.condition.column.NullWritableColumnCondition;
 import org.datavec.api.transform.filter.FilterInvalidValues;
 import org.datavec.api.transform.join.Join;
 import org.datavec.api.transform.schema.Schema;
-import org.datavec.api.transform.transform.string.ReplaceStringTransform;
-import org.datavec.api.writable.LongWritable;
+
 import org.datavec.api.writable.Writable;
 import org.datavec.api.split.FileSplit;
-import org.datavec.local.transforms.AnalyzeLocal;
 import org.datavec.local.transforms.LocalTransformExecutor;
 import org.joda.time.DateTimeZone;
 import org.nd4j.common.io.ClassPathResource;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
-import org.nd4j.linalg.dataset.SplitTestAndTrain;
 import org.nd4j.linalg.dataset.api.preprocessor.NormalizerMinMaxScaler;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
@@ -35,8 +30,6 @@ import java.util.*;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Hello world!
@@ -193,7 +186,7 @@ public class App
         int numLabels = 1;
         int foreseenDays = 1;
 
-        double percentOfTraining = 0.8;
+        double percentOfTraining = 0.7;
 
         double[][] featureMatrix = new double[joinedData.size()-foreseenDays][numFeatures];
         double[][] labelMatrix = new double[transformedData.size()-foreseenDays][numLabels];
@@ -217,34 +210,66 @@ public class App
         INDArray labelArray = Nd4j.create(labelMatrix);
         System.out.println("#####################################################");
         System.out.println("INDArray feature: \n" + featureArray);
+        System.out.println("Num. rows    " + featureArray.rows());
 
-        //We can select arbitrary subsets, using INDArray indexing:
-        //All columns, first 3 rows (note that internal here is columns 0 inclusive to 3 exclusive)
-        INDArray featureTrain = featureArray.get(NDArrayIndex.interval(2,NDArrayIndex.()), NDArrayIndex.all());
-        System.out.println("#####################################################");
-        System.out.println(featureTrain);
 
-        //INDArray featureArray = Nd4j.create(joinedData);
-        DataSet dataSet = new DataSet(featureArray, labelArray);
-        System.out.println("Número de entradas (columnas) DataSet: " + dataSet.numInputs());
-        System.out.println("Número de examples (filas) DataSet: " + dataSet.numExamples());
-        System.out.println("Número de outcomes DataSet: " + dataSet.numOutcomes());
-        int numRows = dataSet.numExamples();
-        double num = dataSet.numExamples()*percentOfTraining;
+        int rows = featureArray.rows();
+        double num = rows*percentOfTraining;
         int ff = (int)((long)num);
         System.out.println("Valor entero para dividir el dataset: " + ff);
+        //We can select arbitrary subsets, using INDArray indexing:
+        //All columns, first 3 rows (note that internal here is columns 0 inclusive to 3 exclusive)
+        INDArray featureTrain = featureArray.get(NDArrayIndex.interval(rows-ff,rows), NDArrayIndex.all()).dup();
+        INDArray featureTest =featureArray.get(NDArrayIndex.interval(0,rows-ff), NDArrayIndex.all()).dup();
+        System.out.println("##############    INDArray featureTrain    #########################");
+        System.out.println(featureTrain);
+        //System.out.println("valorrrr  : " + featureTrain.getDouble(4,2));
+        System.out.println("##############    INDArray featureTest    #########################");
+        System.out.println(featureTest);
+
+        INDArray labelTrain = labelArray.get(NDArrayIndex.interval(rows-ff,rows), NDArrayIndex.all()).dup();
+        INDArray labelTest =labelArray.get(NDArrayIndex.interval(0,rows-ff), NDArrayIndex.all()).dup();
+
+        DataSet trainData = new DataSet(featureTrain,labelTrain);
+        DataSet testData = new DataSet(featureTest, labelTest);
+
+        System.out.println("Test dataSet features:");
+        System.out.println(testData.getFeatures());
+
+        NormalizerMinMaxScaler normalizer = new NormalizerMinMaxScaler();
+        normalizer.fit(trainData);           //Collect the statistics (mean/stdev) from the training data. This does not modify the input data
+        normalizer.transform(trainData);     //Apply normalization to the training data
+        normalizer.transform(testData);      //Apply normalization to the test data. This is using statistics calculated from the *training* set
+
+        System.out.println("Test dataSet features normalized:");
+        System.out.println(testData.getFeatures());
+
+        System.out.println("Train dataSet features normalized:");
+        System.out.println(trainData.getFeatures());
+
+
+
+        //INDArray featureArray = Nd4j.create(joinedData);
+        //DataSet dataSet = new DataSet(featureArray, labelArray);
+        //System.out.println("Número de entradas (columnas) DataSet: " + dataSet.numInputs());
+        //System.out.println("Número de examples (filas) DataSet: " + dataSet.numExamples());
+        //System.out.println("Número de outcomes DataSet: " + dataSet.numOutcomes());
+        //int numRows = dataSet.numExamples();
+        //double num = dataSet.numExamples()*percentOfTraining;
+        //int ff = (int)((long)num);
+        //System.out.println("Valor entero para dividir el dataset: " + ff);
 
         // Imprimir el DataSet
-        System.out.println("Features:");
-        System.out.println(dataSet.getFeatures());
-        System.out.println("Labels:");
-        System.out.println(dataSet.getLabels());
+        //System.out.println("Features:");
+       // System.out.println(dataSet.getFeatures());
+        //System.out.println("Labels:");
+       // System.out.println(dataSet.getLabels());
 
-        DataSet trainData= (DataSet) dataSet.getRange(1, 5);
-        System.out.println("Train dataSet features:");
-        System.out.println(trainData.getFeatures());
-        System.out.println("Train dataSet labels:");
-        System.out.println(trainData.getLabels());
+        //DataSet trainData= (DataSet) dataSet.getRange(1, 5);
+        //System.out.println("Train dataSet features:");
+        //System.out.println(trainData.getFeatures());
+        //System.out.println("Train dataSet labels:");
+        /*System.out.println(trainData.getLabels());
 
         DataSet testData= (DataSet) dataSet.getRange(0, 2);
         System.out.println("Test dataSet features:");

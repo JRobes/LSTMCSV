@@ -13,13 +13,22 @@ import org.datavec.api.transform.schema.Schema;
 import org.datavec.api.writable.Writable;
 import org.datavec.api.split.FileSplit;
 import org.datavec.local.transforms.LocalTransformExecutor;
+import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
+import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.conf.layers.DenseLayer;
+import org.deeplearning4j.nn.conf.layers.OutputLayer;
+import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import org.deeplearning4j.nn.weights.WeightInit;
 import org.joda.time.DateTimeZone;
 import org.nd4j.common.io.ClassPathResource;
+import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.preprocessor.NormalizerMinMaxScaler;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
+import org.nd4j.linalg.learning.config.Nesterovs;
+import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -247,106 +256,24 @@ public class App
         System.out.println("Train dataSet features normalized:");
         System.out.println(trainData.getFeatures());
 
+        MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
+                .weightInit(WeightInit.XAVIER)
+                .updater(new Nesterovs(0.1))
+                .list()
+                .layer(0, new DenseLayer.Builder().nIn(4).nOut(3).activation(Activation.TANH).build())
+                .layer(1, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).activation(Activation.SOFTMAX).nIn(3).nOut(3).build())
+                .build();
 
+        MultiLayerNetwork net = new MultiLayerNetwork(conf);
+        net.init();
 
-        //INDArray featureArray = Nd4j.create(joinedData);
-        //DataSet dataSet = new DataSet(featureArray, labelArray);
-        //System.out.println("Número de entradas (columnas) DataSet: " + dataSet.numInputs());
-        //System.out.println("Número de examples (filas) DataSet: " + dataSet.numExamples());
-        //System.out.println("Número de outcomes DataSet: " + dataSet.numOutcomes());
-        //int numRows = dataSet.numExamples();
-        //double num = dataSet.numExamples()*percentOfTraining;
-        //int ff = (int)((long)num);
-        //System.out.println("Valor entero para dividir el dataset: " + ff);
-
-        // Imprimir el DataSet
-        //System.out.println("Features:");
-       // System.out.println(dataSet.getFeatures());
-        //System.out.println("Labels:");
-       // System.out.println(dataSet.getLabels());
-
-        //DataSet trainData= (DataSet) dataSet.getRange(1, 5);
-        //System.out.println("Train dataSet features:");
-        //System.out.println(trainData.getFeatures());
-        //System.out.println("Train dataSet labels:");
-        /*System.out.println(trainData.getLabels());
-
-        DataSet testData= (DataSet) dataSet.getRange(0, 2);
-        System.out.println("Test dataSet features:");
-        System.out.println(testData.getFeatures());
-        System.out.println("Test dataSet labels:");
-        System.out.println(testData.getLabels());
-
-        NormalizerMinMaxScaler normalizer = new NormalizerMinMaxScaler();
-        //normalizer.fit(trainingData);           //Collect the statistics (mean/stdev) from the training data. This does not modify the input data
-        //normalizer.transform(trainingData);     //Apply normalization to the training data
-        //normalizer.transform(testData);         //Apply normalization to the test data. This is using statistics calculated from the *training* set
-
-
-
-
-
-
-/*
-
-        Collections.sort(transformedData, new Comparator<List<Writable>>() {
-            @Override
-            public int compare(List<Writable> o1, List<Writable> o2) {
-                Writable date1 = o1.get(0);
-                Writable date2 = o2.get(0);
-
-                Long n1 = (Long)date1.toLong();
-                Long n2 = (Long)date2.toLong();
-                return n1.compareTo(n2);
-
-            }
-
-        });
-*/
-
-/*
-        // Analizar los datos
-        RecordReader recordReaderNew = new CollectionRecordReader(transformedData);
-        DataAnalysis dataAnalysis = AnalyzeLocal.analyze(outputSchema, recordReaderNew);
-        System.out.println("Análisis del conjunto de datos:");
-        System.out.println(dataAnalysis);
-        ColumnAnalysis salaryAnalysis = dataAnalysis.getColumnAnalysis("Diff");
-        System.out.println("Análisis de la columna 'Diff':");
-        System.out.println(salaryAnalysis);
-
-*/
-
-        // Paso 7: Convertir los datos transformados en un DataSetIterator
-        //int batchSize = 10;
-        //int labelIndex = 1; // Índice de la columna de etiquetas después de la transformación
-       // int numClasses = 3;  // Número de clases para la clasificación
-
-        //RecordReader transformedRecordReader = new CSVRecordReader(skipNumLines);
-        //transformedRecordReader.initialize(new FileSplit(new File(path)));
-
-        //DataSetIterator iterator = new RecordReaderDataSetIterator(transformedRecordReader, batchSize, labelIndex, numClasses);
-
-        // Paso 8: Normalizar los datos
-        //NormalizerStandardize normalizer = new NormalizerStandardize();
-        //normalizer.fit(iterator);  // Calcular estadísticas de normalización
-        //iterator.setPreProcessor(normalizer);
-
-        // Paso 9: Leer y procesar los datos
-        //while (iterator.hasNext()) {
-         //   DataSet dataSet = iterator.next();
-         //   System.out.println(dataSet);
-       // }
-
+        for (int epoch = 0; epoch < 100; epoch++) {
+            net.fit(trainData);
+        }
 
         System.out.println("\n\nDONE");
 
     }
 
-    public static Map<Writable, List<Writable>> convertList2Map(List<List<Writable>> list) {
-        Map<Writable, List<Writable>> map = new HashMap<>();
-        for (List<Writable> record : list) {
-            map.put(record.get(0), record);
-        }
-        return map;
-    }
+
 }

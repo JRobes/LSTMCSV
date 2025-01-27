@@ -1,0 +1,15 @@
+https://www.uipath.com/pricing Es gratis para uso personal
+
+google searchs:
+uipath for twitter scrapping
+
+historic sentiment analysis for NVIDIA stocks
+
+altindex tiene datos sobre sentiment analysis de empresas americanas y cripto
+https://altindex.com/ticker/nvda
+De esta pagina se puede sacar los datos de los graficos con jsoup casi seguro
+
+
+Scrape Twitter and Do Sentiment Analysis (Advanced UiPath Use Case)
+https://www.youtube.com/watch?app=desktop&v=HKxrAPxn5jA&t=202s
+

@@ -255,7 +255,7 @@ public class App
 
         System.out.println("Train dataSet features normalized:");
         System.out.println(trainData.getFeatures());
-
+/*
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .weightInit(WeightInit.XAVIER)
                 .updater(new Nesterovs(0.1))
@@ -267,10 +267,10 @@ public class App
         MultiLayerNetwork net = new MultiLayerNetwork(conf);
         net.init();
 
-        for (int epoch = 0; epoch < 100; epoch++) {
+        for (int epoch = 0; epoch < 1; epoch++) {
             net.fit(trainData);
         }
-
+*/
         System.out.println("\n\nDONE");
 
     }

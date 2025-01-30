@@ -44,6 +44,12 @@
       <artifactId>nd4j-common</artifactId>
       <version>1.0.0-M2.1</version>
     </dependency>
+    <dependency>
+      <groupId>org.nd4j</groupId>
+      <artifactId>nd4j-api</artifactId>
+      <version>1.0.0-M2.1</version> <!-- Asegúrate de usar la versión compatible con DL4J -->
+    </dependency>
+
 
     <!-- https://mvnrepository.com/artifact/org.deeplearning4j/deeplearning4j-core -->
     <dependency>

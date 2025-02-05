@@ -46,7 +46,7 @@ import java.util.List;
  */
 public class App 
 {
-    private static Logger log = LoggerFactory.getLogger(App.class);
+    private static final Logger log = LoggerFactory.getLogger(App.class);
     static String fileName = "ACX-short.csv";
     static String fileNameIBEX = "IBEX35-short.csv";
     //static String path = "C:\\Users\\jrobes\\IdeaProjects\\LSTMCSV\\ACX-short.csv";
@@ -65,132 +65,15 @@ public class App
         String path = path2LevelsUp.toAbsolutePath() + File.separator + fileName;
         String pathIBEX = path2LevelsUp.toAbsolutePath() + File.separator + fileNameIBEX;
 
-        Schema inputDataSchema = new Schema.Builder()
-                .addColumnString("DateTimeString", ".*", 1, null)
-                .addColumnString("Last", ".*", 1, null)
-                .addColumnString("Open", ".*", 1, null)
-                .addColumnString("Max", ".*", 1, null)
-                .addColumnString("Min", ".*", 1, null)
-                .addColumnString("Vol", ".*", 1, null)
-                .addColumnString("Per", ".*", 1, null)
-                .build();
-
-        System.out.println("Input data schema details:");
-        //System.out.println(inputDataSchema);
-
-        // Crear el TransformProcess
-        //Map<String, String> replacements = new HashMap<>();
-        //replacements.put(",", "."); // Reemplazar ',' por '.'
-
-        TransformProcess tp = new TransformProcess.Builder(inputDataSchema)
-
-                .filter(new FilterInvalidValues("DateTimeString", "Last", "Open", "Max","Min", "Vol","Per"))
-
-                .transform(new InvestingNumberTransform("Last"))
-                .convertToDouble("Last")
-                .transform(new InvestingNumberTransform("Open"))
-                .convertToDouble("Open")
-                .transform(new InvestingNumberTransform("Max"))
-                .convertToDouble("Max")
-                .transform(new InvestingNumberTransform("Min"))
-                .convertToDouble("Min")
-                .transform(new InvestingNumberTransform("Vol"))
-                .convertToDouble("Vol")
-                .transform(new PercentTransform("Per"))
-                .convertToDouble("Per")
-                .doubleColumnsMathOp("Diff", MathOp.Subtract, "Max", "Min")
-                .stringToTimeTransform("DateTimeString","DD.MM.YYYY", DateTimeZone.UTC)
-                .renameColumn("DateTimeString", "Date")
-                .removeColumns("Open", "Max", "Min")
-                .filter(new NullWritableColumnCondition("Last"))
-                .build();
-
-        TransformProcess tpIBEX = new TransformProcess.Builder(inputDataSchema)
-                .removeColumns("Open", "Max","Min", "Vol","Per")
-                .filter(new FilterInvalidValues("DateTimeString", "Last"))
-                .transform(new InvestingNumberTransform("Last"))
-                .convertToDouble("Last")
-                .stringToTimeTransform("DateTimeString","DD.MM.YYYY", DateTimeZone.UTC)
-                .renameColumn("DateTimeString", "Date")
-                .build();
-
-
-        Schema outputSchema = tp.getFinalSchema();
-        Schema outputSchemaIBEX = tpIBEX.getFinalSchema();
-
-        System.out.println("\n\nSchemas after transforming data:");
-        //System.out.println(outputSchema);
-        //System.out.println(outputSchemaIBEX);
-
-        // Paso 3: Leer los datos con CSVRecordReader
-        int skipNumLines = 1; // Saltar la primera línea (cabecera)
-        RecordReader recordReader = new CSVRecordReader(skipNumLines, ',', '"');
-        recordReader.initialize(new FileSplit(new File(path)));
-
-        RecordReader recordReaderIBEX = new CSVRecordReader(skipNumLines, ',', '"');
-        recordReaderIBEX.initialize(new FileSplit(new File(pathIBEX)));
-
-        System.out.println("Original data");
-        // Paso 4: Almacenar los registros en una lista
-        List<List<Writable>> originalData = new ArrayList<>();
-        while (recordReader.hasNext()) {
-            originalData.add(recordReader.next());
-        }
-
-        List<List<Writable>> originalDataIBEX = new ArrayList<>();
-        while (recordReaderIBEX.hasNext()) {
-            originalDataIBEX.add(recordReaderIBEX.next());
-        }
-
-        // Definir la join
-        Join join = new Join.Builder(Join.JoinType.Inner)
-                .setJoinColumns("Date")
-                .setSchemas(outputSchema, outputSchemaIBEX)
-                .build();
-
-
-        // Paso 5: Aplicar el TransformProcess localmente
-        List<List<Writable>> transformedData = LocalTransformExecutor.execute(originalData, tp);
-        List<List<Writable>> transformedDataIBEX = LocalTransformExecutor.execute(originalDataIBEX, tpIBEX);
-
-
-        // Paso 6: Imprimir los datos transformados
-        System.out.println("Datos transformados...\nNúmero de filas: " + transformedData.size());
-        for (List<Writable> record : transformedData) {
-            System.out.println(record);
-        }
-        System.out.println();
-        System.out.println();
-        System.out.println("Datos transformados IBEX...\nNúmero de filas: " + transformedDataIBEX.size());
-        for (List<Writable> record : transformedDataIBEX) {
-            System.out.println(record);
-        }
-
-
-
-
-
-
-        //List<List<Writable>> joinedData = LocalTransformExecutor.executeJoin(join, transformedData, transformedDataIBEX);
-        List<List<Writable>> joinedData = new ArrayList<>();
-
-        //List<List<Writable>> joinedData = new ArrayList<>();
-        for (List<Writable> leftRow : transformedData) {
-            for (List<Writable> rightRow : transformedDataIBEX) {
-                if (leftRow.get(0).toString().equals(rightRow.get(0).toString())) { // Comparar la columna "id"
-                    List<Writable> joinedRow = new ArrayList<>(leftRow);
-                    joinedRow.addAll(rightRow.subList(1, rightRow.size())); // Excluir la columna "id" duplicada
-                    joinedData.add(joinedRow);
-                }
-            }
-        }
-
+        InvestingTransformData itd = new InvestingTransformData();
+        List<List<Writable>> joinedData = itd.transform01(path, pathIBEX);
         System.out.println();
         System.out.println();
         System.out.println("Datos Unidos...\nNúmero de filas: " + joinedData.size());
         for (List<Writable> record : joinedData) {
             System.out.println(record);
         }
+
         int numFeatures = 5;
         int numLabels = 1;
         int foreseenDays = 1;
@@ -198,7 +81,7 @@ public class App
         double percentOfTraining = 0.7;
 
         double[][] featureMatrix = new double[joinedData.size()-foreseenDays][numFeatures];
-        double[][] labelMatrix = new double[transformedData.size()-foreseenDays][numLabels];
+        double[][] labelMatrix = new double[joinedData.size()-foreseenDays][numLabels];
 
         for (int rowIndex = foreseenDays; rowIndex < joinedData.size(); rowIndex++) {
             List<Writable> row = joinedData.get(rowIndex);

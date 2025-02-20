@@ -1,4 +1,4 @@
-package dual_lstm_csv_manipulation;
+package dual_lstm_csv_manipulation.investing;
 
 import org.datavec.api.transform.transform.string.BaseStringTransform;
 import org.datavec.api.writable.Text;

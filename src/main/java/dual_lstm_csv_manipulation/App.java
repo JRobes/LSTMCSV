@@ -1,41 +1,20 @@
 package dual_lstm_csv_manipulation;
 
-import org.datavec.api.records.reader.RecordReader;
-import org.datavec.api.records.reader.impl.csv.CSVRecordReader;
-import org.datavec.api.transform.MathOp;
-import org.datavec.api.transform.TransformProcess;
-
-import org.datavec.api.transform.condition.column.NullWritableColumnCondition;
-import org.datavec.api.transform.filter.FilterInvalidValues;
-import org.datavec.api.transform.join.Join;
-import org.datavec.api.transform.schema.Schema;
+import dual_lstm_csv_manipulation.investing.InvestingTransformData;
 
 import org.datavec.api.writable.Writable;
-import org.datavec.api.split.FileSplit;
-import org.datavec.local.transforms.LocalTransformExecutor;
-import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
-import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
-import org.deeplearning4j.nn.conf.layers.DenseLayer;
-import org.deeplearning4j.nn.conf.layers.OutputLayer;
-import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
-import org.deeplearning4j.nn.weights.WeightInit;
-import org.joda.time.DateTimeZone;
 import org.nd4j.common.io.ClassPathResource;
-import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.preprocessor.NormalizerMinMaxScaler;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
-import org.nd4j.linalg.learning.config.Nesterovs;
-import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -54,19 +33,15 @@ public class App
     public static void main( String[] args ) throws IOException, NoSuchFieldException, IllegalAccessException, InterruptedException {
 
         System.out.println( "Hello World!" );
-        log.warn("Hello from the logger");
-        String classPath = new ClassPathResource("").getFile().getPath();
-        //System.out.println(classPath);
+        String[] sourcePaths = new String[]{fileName, fileNameIBEX};
 
-        //Path path2 = Paths.get(classPath);
-        Path path2LevelsUp = Paths.get(classPath).getParent().getParent(); // Retrocede dos niveles
 
-        System.out.println("Dos niveles arriba: " + path2LevelsUp.toAbsolutePath() + File.separator + fileName);
-        String path = path2LevelsUp.toAbsolutePath() + File.separator + fileName;
-        String pathIBEX = path2LevelsUp.toAbsolutePath() + File.separator + fileNameIBEX;
+        IAbsPaths absPaths = new GetSoucePaths(sourcePaths);
+        String[] absolutePaths = absPaths.getAbsPaths();
 
-        InvestingTransformData itd = new InvestingTransformData();
-        List<List<Writable>> joinedData = itd.transform01(path, pathIBEX);
+        IDataPreparation itd = new InvestingTransformData(0, absolutePaths);
+        List<List<Writable>> joinedData = itd.getDataAsWritable();
+
         System.out.println();
         System.out.println();
         System.out.println("Datos Unidos...\nNúmero de filas: " + joinedData.size());

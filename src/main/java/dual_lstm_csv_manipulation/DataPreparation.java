@@ -1,9 +1,12 @@
 package dual_lstm_csv_manipulation;
 
+import org.datavec.api.writable.Writable;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
+
+import java.util.List;
 
 public class DataPreparation implements IDataPreparation{
     @Override
@@ -27,6 +30,11 @@ public class DataPreparation implements IDataPreparation{
         DataSet dataSet = new DataSet(features, labels);
 
         return new CustomDataSetIterator(dataSet.asList(), batchSize);
+    }
+
+    @Override
+    public List<List<Writable>> getDataAsWritable() {
+        return null;
     }
 
 }

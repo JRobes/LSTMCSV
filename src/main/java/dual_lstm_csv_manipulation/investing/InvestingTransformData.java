@@ -1,5 +1,7 @@
-package dual_lstm_csv_manipulation;
+package dual_lstm_csv_manipulation.investing;
 
+import dual_lstm_csv_manipulation.IDataPreparation;
+import dual_lstm_csv_manipulation.PercentTransform;
 import org.datavec.api.records.reader.RecordReader;
 import org.datavec.api.records.reader.impl.csv.CSVRecordReader;
 import org.datavec.api.split.FileSplit;
@@ -11,15 +13,20 @@ import org.datavec.api.transform.schema.Schema;
 import org.datavec.api.writable.Writable;
 import org.datavec.local.transforms.LocalTransformExecutor;
 import org.joda.time.DateTimeZone;
+import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InvestingTransformData {
+public class InvestingTransformData implements IDataPreparation {
     private final Schema inputDataSchema;
-    InvestingTransformData(){
+    private String[] paths;
+    private int typeOfTransform = 0;
+    public InvestingTransformData(int typeOfTransform, String...paths){
+        this.typeOfTransform = typeOfTransform;
+        this.paths = paths;
         this.inputDataSchema = new Schema.Builder()
                 .addColumnString("DateTimeString", ".*", 1, null)
                 .addColumnString("Last", ".*", 1, null)
@@ -32,8 +39,8 @@ public class InvestingTransformData {
 
     }
 
-    public List<List<Writable>> transform01(String path1, String path2) throws IOException, InterruptedException {
-
+    public List<List<Writable>> transform01()  {
+        List<List<Writable>> joinedData = new ArrayList<>();
 
         TransformProcess tp = new TransformProcess.Builder(inputDataSchema)
                 .filter(new FilterInvalidValues("DateTimeString", "Last", "Open", "Max","Min", "Vol","Per"))
@@ -65,38 +72,62 @@ public class InvestingTransformData {
                 .renameColumn("DateTimeString", "Date")
                 .build();
 
-        int skipNumLines = 1; // Saltar la primera línea (cabecera)
-        RecordReader recordReader = new CSVRecordReader(skipNumLines, ',', '"');
-        recordReader.initialize(new FileSplit(new File(path1)));
+        try{
+            int skipNumLines = 1; // Saltar la primera línea (cabecera)
+            RecordReader recordReader = new CSVRecordReader(skipNumLines, ',', '"');
+            recordReader.initialize(new FileSplit(new File(paths[0])));
 
-        RecordReader recordReaderIBEX = new CSVRecordReader(skipNumLines, ',', '"');
-        recordReaderIBEX.initialize(new FileSplit(new File(path2)));
+            RecordReader recordReaderIBEX = new CSVRecordReader(skipNumLines, ',', '"');
+            recordReaderIBEX.initialize(new FileSplit(new File(paths[1])));
+            // Paso 4: Almacenar los registros en una lista
+            List<List<Writable>> originalData = new ArrayList<>();
+            while (recordReader.hasNext()) {
+                originalData.add(recordReader.next());
+            }
+            List<List<Writable>> originalDataIBEX = new ArrayList<>();
+            while (recordReaderIBEX.hasNext()) {
+                originalDataIBEX.add(recordReaderIBEX.next());
+            }
+            // Paso 5: Aplicar el TransformProcess localmente
+            List<List<Writable>> transformedData = LocalTransformExecutor.execute(originalData, tp);
+            List<List<Writable>> transformedDataIBEX = LocalTransformExecutor.execute(originalDataIBEX, tpIBEX);
 
-        // Paso 4: Almacenar los registros en una lista
-        List<List<Writable>> originalData = new ArrayList<>();
-        while (recordReader.hasNext()) {
-            originalData.add(recordReader.next());
-        }
-        List<List<Writable>> originalDataIBEX = new ArrayList<>();
-        while (recordReaderIBEX.hasNext()) {
-            originalDataIBEX.add(recordReaderIBEX.next());
-        }
-        // Paso 5: Aplicar el TransformProcess localmente
-        List<List<Writable>> transformedData = LocalTransformExecutor.execute(originalData, tp);
-        List<List<Writable>> transformedDataIBEX = LocalTransformExecutor.execute(originalDataIBEX, tpIBEX);
-        List<List<Writable>> joinedData = new ArrayList<>();
 
-        //List<List<Writable>> joinedData = new ArrayList<>();
-        for (List<Writable> leftRow : transformedData) {
-            for (List<Writable> rightRow : transformedDataIBEX) {
-                if (leftRow.get(0).toString().equals(rightRow.get(0).toString())) { // Comparar la columna "id"
-                    List<Writable> joinedRow = new ArrayList<>(leftRow);
-                    joinedRow.addAll(rightRow.subList(1, rightRow.size())); // Excluir la columna "id" duplicada
-                    joinedData.add(joinedRow);
+            //List<List<Writable>> joinedData = new ArrayList<>();
+            for (List<Writable> leftRow : transformedData) {
+                for (List<Writable> rightRow : transformedDataIBEX) {
+                    if (leftRow.get(0).toString().equals(rightRow.get(0).toString())) { // Comparar la columna "id"
+                        List<Writable> joinedRow = new ArrayList<>(leftRow);
+                        joinedRow.addAll(rightRow.subList(1, rightRow.size())); // Excluir la columna "id" duplicada
+                        joinedData.add(joinedRow);
+                    }
                 }
             }
+
+
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }catch (InterruptedException e){
+            e.printStackTrace();
         }
 
+
         return joinedData;
+
+    }
+
+    @Override
+    public DataSetIterator prepareData(double[][] rawData, int sequenceLength, int batchSize) {
+        return null;
+    }
+
+    @Override
+    public List<List<Writable>> getDataAsWritable() {
+        if(typeOfTransform != 0){
+            System.out.println("InvestingTransformData.getDataAsWritable()...No implementada la transformación de los datos. ");
+            return null;
+        }
+        return transform01();
     }
 }

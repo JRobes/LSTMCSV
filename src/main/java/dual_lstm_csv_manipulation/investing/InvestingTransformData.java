@@ -1,7 +1,6 @@
 package dual_lstm_csv_manipulation.investing;
 
 import dual_lstm_csv_manipulation.IDataPreparation;
-import dual_lstm_csv_manipulation.PercentTransform;
 import org.datavec.api.records.reader.RecordReader;
 import org.datavec.api.records.reader.impl.csv.CSVRecordReader;
 import org.datavec.api.split.FileSplit;
@@ -13,7 +12,6 @@ import org.datavec.api.transform.schema.Schema;
 import org.datavec.api.writable.Writable;
 import org.datavec.local.transforms.LocalTransformExecutor;
 import org.joda.time.DateTimeZone;
-import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 
 import java.io.File;
 import java.io.IOException;
@@ -115,11 +113,6 @@ public class InvestingTransformData implements IDataPreparation {
 
         return joinedData;
 
-    }
-
-    @Override
-    public DataSetIterator prepareData(double[][] rawData, int sequenceLength, int batchSize) {
-        return null;
     }
 
     @Override

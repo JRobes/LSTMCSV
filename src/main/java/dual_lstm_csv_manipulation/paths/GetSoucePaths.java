@@ -1,7 +1,5 @@
-package dual_lstm_csv_manipulation;
+package dual_lstm_csv_manipulation.paths;
 
-import org.apache.spark.sql.catalyst.util.SQLOrderingUtil;
-import org.bytedeco.opencv.presets.opencv_core;
 import org.nd4j.common.io.ClassPathResource;
 
 import java.io.File;
@@ -11,9 +9,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GetSoucePaths implements IAbsPaths{
+public class GetSoucePaths implements IAbsPaths {
     private String[] p;
-    GetSoucePaths(String... paths){
+    public GetSoucePaths(String... paths){
         this.p = paths;
     }
 

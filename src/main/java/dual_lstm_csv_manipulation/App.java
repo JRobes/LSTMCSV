@@ -2,8 +2,9 @@ package dual_lstm_csv_manipulation;
 
 import dual_lstm_csv_manipulation.investing.InvestingTransformData;
 
+import dual_lstm_csv_manipulation.paths.GetSoucePaths;
+import dual_lstm_csv_manipulation.paths.IAbsPaths;
 import org.datavec.api.writable.Writable;
-import org.nd4j.common.io.ClassPathResource;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.preprocessor.NormalizerMinMaxScaler;
@@ -12,12 +13,10 @@ import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Hello world!
@@ -42,39 +41,79 @@ public class App
         IDataPreparation itd = new InvestingTransformData(0, absolutePaths);
         List<List<Writable>> joinedData = itd.getDataAsWritable();
 
+
         System.out.println();
         System.out.println();
         System.out.println("Datos Unidos...\nNúmero de filas: " + joinedData.size());
         for (List<Writable> record : joinedData) {
             System.out.println(record);
         }
+        System.out.println("-----------------------------------------------------");
 
         int numFeatures = 5;
         int numLabels = 1;
         int foreseenDays = 1;
 
+        int sequenceLength = 2;
+
         double percentOfTraining = 0.7;
+        int numberOfTrainingItems = (int)Math.round(percentOfTraining * joinedData.size());
 
-        double[][] featureMatrix = new double[joinedData.size()-foreseenDays][numFeatures];
-        double[][] labelMatrix = new double[joinedData.size()-foreseenDays][numLabels];
+        System.out.println("Numero de Items de entrenamiento: " + numberOfTrainingItems);
+        System.out.println("-----------------------------------------------------");
+        System.out.println("Numero de Items de test: " + (joinedData.size() -numberOfTrainingItems));
+        System.out.println("-----------------------------------------------------");
 
-        for (int rowIndex = foreseenDays; rowIndex < joinedData.size(); rowIndex++) {
+
+        double[][] featureMatrixTraining = new double[joinedData.size()][numFeatures];
+        double[][] labelMatrixTraining = new double[joinedData.size()][numLabels];
+
+
+
+
+
+        double[][] featureMatrixTest = new double[joinedData.size()][numFeatures];
+        double[][] labelMatrixTest = new double[joinedData.size()][numLabels];
+
+        for (int rowIndex = 0; rowIndex < joinedData.size(); rowIndex++) {
             List<Writable> row = joinedData.get(rowIndex);
 
             // Extraer características
             for (int colIndex = 0; colIndex < numFeatures; colIndex++) {
-                featureMatrix[rowIndex-foreseenDays][colIndex] = row.get(colIndex+1).toDouble();
+                featureMatrixTest[rowIndex][colIndex] = row.get(colIndex + 1).toDouble();
             }
             // Extraer etiquetas
             for (int colIndex = 0; colIndex < numLabels; colIndex++) {
-                List<Writable> row2 = joinedData.get(rowIndex-foreseenDays);
-                labelMatrix[rowIndex-foreseenDays][colIndex] = row2.get(1).toDouble();
+                List<Writable> row2 = joinedData.get(rowIndex);
+                labelMatrixTest[rowIndex][colIndex] = row2.get(1).toDouble();
             }
-
         }
 
-        INDArray featureArray = Nd4j.create(featureMatrix);
-        INDArray labelArray = Nd4j.create(labelMatrix);
+
+
+        /*
+        for(int r = 0; r < featureMatrixTest.length; r++){
+            for(int m = 0; m < numFeatures; m++){
+                System.out.print(featureMatrixTest[r][m] + "\t");
+            }
+            System.out.println();
+        }
+        System.out.println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
+        for(int r = 0; r < labelMatrixTest.length; r++){
+            for(int m = 0; m < numLabels; m++){
+                System.out.print(labelMatrixTest[r][m] + "\t");
+            }
+            System.out.println();
+        }
+
+*/
+
+
+    /*
+
+
+        INDArray featureArray = Nd4j.create(featureMatrixTest);
+        INDArray labelArray = Nd4j.create(labelMatrixTest);
         System.out.println("#####################################################");
         System.out.println("INDArray feature: \n" + featureArray);
         System.out.println("Num. rows    " + featureArray.rows());
@@ -113,6 +152,14 @@ public class App
 
         System.out.println("Train dataSet features normalized:");
         System.out.println(trainData.getFeatures());
+
+ */
+
+
+
+
+
+
 /*
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .weightInit(WeightInit.XAVIER)

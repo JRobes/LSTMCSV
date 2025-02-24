@@ -16,6 +16,7 @@ import org.joda.time.DateTimeZone;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class InvestingTransformData implements IDataPreparation {
@@ -110,6 +111,8 @@ public class InvestingTransformData implements IDataPreparation {
             e.printStackTrace();
         }
 
+        //SE REVIERTEN LOS DATOS
+        //Collections.reverse(joinedData);
 
         return joinedData;
 

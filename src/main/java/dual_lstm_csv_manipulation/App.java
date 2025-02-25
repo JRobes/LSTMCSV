@@ -36,30 +36,30 @@ public class App
         System.out.println( "Hello World!" );
         String[] sourcePaths = new String[]{fileName, fileNameIBEX};
 
-
         IAbsPaths absPaths = new GetSoucePaths(sourcePaths);
         String[] absolutePaths = absPaths.getAbsPaths();
 
         IDataPreparation itd = new InvestingTransformData(1, absolutePaths);
         List<List<Writable>> joinedData = itd.getDataAsWritable();
 
-
         System.out.println();
         System.out.println();
         System.out.println("Datos Unidos...\nNúmero de filas: " + joinedData.size());
         List<String[]> data = new ArrayList<>();
         for (List<Writable> record : joinedData) {
-            //Object[] arr = record.toArray();
-            String[] ee = (String[]) record.toArray();
-            //System.out.println(Arrays.toString(ee));
-            data.add(ee);
+            Object[] ee = record.toArray();
+            String[] stringArray = Arrays.stream(ee)
+                    .map(Object::toString) // Convierte cada elemento a String
+                    .toArray(String[]::new);
+            data.add(stringArray);
         }
         //REVERTIR LOS DATOS, YA QUE PUEDEN ESTAR
         Collections.reverse(data);
+
         System.out.println("@@@@@@@@@@@@@@@@@@@");
         for(String[] e : data){
             System.out.println(Arrays.toString(e));
-            System.out.println(e.length);
+            //System.out.println(e.length);
         }
 
         int numFeatures = 3;
@@ -71,7 +71,6 @@ public class App
         int numSamples = data.size();
 
         System.out.println("numSamples: " + numSamples);
-        //System.out.println("numSamples: " + numSamples);
 
         // Inicializar arrays para features y labels
         double[][][] features = new double[numSamples - sequenceLength][sequenceLength][numFeatures];

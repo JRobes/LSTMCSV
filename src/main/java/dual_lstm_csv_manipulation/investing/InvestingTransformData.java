@@ -116,12 +116,80 @@ public class InvestingTransformData implements IDataPreparation {
 
     }
 
+    public List<List<Writable>> transform02()  {
+        List<List<Writable>> transformedData = new ArrayList<>();
+
+        TransformProcess tp = new TransformProcess.Builder(inputDataSchema)
+                .filter(new FilterInvalidValues("DateTimeString", "Last", "Open", "Max","Min", "Vol","Per"))
+                .transform(new InvestingNumberTransform("Last"))
+                .convertToDouble("Last")
+                .transform(new InvestingNumberTransform("Open"))
+                .convertToDouble("Open")
+                .transform(new InvestingNumberTransform("Max"))
+                .convertToDouble("Max")
+                .transform(new InvestingNumberTransform("Min"))
+                .convertToDouble("Min")
+                .transform(new InvestingNumberTransform("Vol"))
+                .convertToDouble("Vol")
+                .transform(new PercentTransform("Per"))
+                .convertToDouble("Per")
+                .doubleColumnsMathOp("Diff", MathOp.Subtract, "Max", "Min")
+                .stringToTimeTransform("DateTimeString","DD.MM.YYYY", DateTimeZone.UTC)
+                .renameColumn("DateTimeString", "Date")
+                .removeColumns("Open", "Max", "Min")
+                .filter(new NullWritableColumnCondition("Last"))
+                .build();
+
+        TransformProcess tpIBEX = new TransformProcess.Builder(inputDataSchema)
+                .removeColumns("Open", "Max","Min", "Vol","Per")
+                .filter(new FilterInvalidValues("DateTimeString", "Last"))
+                .transform(new InvestingNumberTransform("Last"))
+                .convertToDouble("Last")
+                .stringToTimeTransform("DateTimeString","DD.MM.YYYY", DateTimeZone.UTC)
+                .renameColumn("DateTimeString", "Date")
+                .build();
+
+        try{
+            int skipNumLines = 1; // Saltar la primera línea (cabecera)
+            RecordReader recordReader = new CSVRecordReader(skipNumLines, ',', '"');
+            recordReader.initialize(new FileSplit(new File(paths[0])));
+
+
+            // Paso 4: Almacenar los registros en una lista
+            List<List<Writable>> originalData = new ArrayList<>();
+            while (recordReader.hasNext()) {
+                originalData.add(recordReader.next());
+            }
+
+            // Paso 5: Aplicar el TransformProcess localmente
+            transformedData = LocalTransformExecutor.execute(originalData, tp);
+
+
+
+        }catch (IOException | InterruptedException e){
+            e.printStackTrace();
+        }
+
+        //SE REVIERTEN LOS DATOS
+        //Collections.reverse(joinedData);
+
+        return transformedData;
+
+    }
+
     @Override
     public List<List<Writable>> getDataAsWritable() {
-        if(typeOfTransform != 0){
-            System.out.println("InvestingTransformData.getDataAsWritable()...No implementada la transformación de los datos. ");
-            return null;
+        switch (typeOfTransform){
+            case 0:
+                return transform01();
+            case 1:
+                return transform02();
+            default:
+                System.out.println("InvestingTransformData.getDataAsWritable()...No implementada la transformación de los datos. ");
+                return null;
+
+
         }
-        return transform01();
+
     }
 }

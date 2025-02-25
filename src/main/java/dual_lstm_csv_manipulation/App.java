@@ -40,7 +40,7 @@ public class App
         IAbsPaths absPaths = new GetSoucePaths(sourcePaths);
         String[] absolutePaths = absPaths.getAbsPaths();
 
-        IDataPreparation itd = new InvestingTransformData(0, absolutePaths);
+        IDataPreparation itd = new InvestingTransformData(1, absolutePaths);
         List<List<Writable>> joinedData = itd.getDataAsWritable();
 
 
@@ -50,21 +50,77 @@ public class App
         List<String[]> data = new ArrayList<>();
         for (List<Writable> record : joinedData) {
             //Object[] arr = record.toArray();
-            String[] ee = new String[]{Arrays.toString(record.toArray())};
-            System.out.println(Arrays.toString(ee));
+            String[] ee = (String[]) record.toArray();
+            //System.out.println(Arrays.toString(ee));
             data.add(ee);
         }
-        System.out.println("-----------------------------------------------------");
+        //REVERTIR LOS DATOS, YA QUE PUEDEN ESTAR
+        Collections.reverse(data);
+        System.out.println("@@@@@@@@@@@@@@@@@@@");
+        for(String[] e : data){
+            System.out.println(Arrays.toString(e));
+            System.out.println(e.length);
+        }
 
-        int numFeatures = 5;
+        int numFeatures = 3;
         int numLabels = 1;
         int foreseenDays = 1;
 
         int sequenceLength = 2;
 
+        int numSamples = data.size();
+
+        System.out.println("numSamples: " + numSamples);
+        //System.out.println("numSamples: " + numSamples);
+
+        // Inicializar arrays para features y labels
+        double[][][] features = new double[numSamples - sequenceLength][sequenceLength][numFeatures];
+        double[][] labels = new double[numSamples - sequenceLength][1];
+
+
+
+        // Procesar los datos
+        for (int i = 0; i < numSamples - sequenceLength; i++) {
+            for (int j = 0; j < sequenceLength; j++) {
+                // Leer las features (columnas 2, 3 y 4)
+                features[i][j][0] = Double.parseDouble(data.get(i + j)[1]); // Segunda columna
+                features[i][j][1] = Double.parseDouble(data.get(i + j)[2]); // Tercera columna
+                features[i][j][2] = Double.parseDouble(data.get(i + j)[3]); // Cuarta columna
+            }
+            // Leer el target (segunda columna, que es el target)
+            labels[i][0] = Double.parseDouble(data.get(i + sequenceLength)[1]);
+        }
+
+        // Convertir a INDArray
+        INDArray featureArray = Nd4j.create(features);
+        INDArray labelArray = Nd4j.create(labels);
+
+        // Imprimir formas para verificar
+        System.out.println("Forma de features: " + Arrays.toString(featureArray.shape())); // [numSamples - sequenceLength, sequenceLength, numFeatures]
+        System.out.println("Forma de labels: " + Arrays.toString(labelArray.shape())); // [numSamples - sequenceLength, 1]
+
+        System.out.println("Forma de features: \n" + featureArray); // [numSamples - sequenceLength, sequenceLength, numFeatures]
+        //System.out.println("Forma de labels: " + Arrays.toString(labelArray.shape()));
+        System.out.println("Forma de labels: \n" + labelArray);
+
+
+
+
+
+
+
+
+
+
+        System.out.println("-----------------------------------------------------");
+
+
+
         double percentOfTraining = 0.7;
         int numberOfTrainingItems = (int)Math.round(percentOfTraining * joinedData.size());
 
+
+        /*
         System.out.println("Numero de Items de entrenamiento: " + numberOfTrainingItems);
         System.out.println("-----------------------------------------------------");
         System.out.println("Numero de Items de test: " + (joinedData.size() -numberOfTrainingItems));
@@ -92,7 +148,7 @@ public class App
                 labelMatrixTest[rowIndex][colIndex] = row2.get(1).toDouble();
             }
         }
-
+        */
 
 
         /*

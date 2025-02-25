@@ -14,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,8 +47,12 @@ public class App
         System.out.println();
         System.out.println();
         System.out.println("Datos Unidos...\nNúmero de filas: " + joinedData.size());
+        List<String[]> data = new ArrayList<>();
         for (List<Writable> record : joinedData) {
-            System.out.println(record);
+            //Object[] arr = record.toArray();
+            String[] ee = new String[]{Arrays.toString(record.toArray())};
+            System.out.println(Arrays.toString(ee));
+            data.add(ee);
         }
         System.out.println("-----------------------------------------------------");
 
@@ -67,8 +73,6 @@ public class App
 
         double[][] featureMatrixTraining = new double[joinedData.size()][numFeatures];
         double[][] labelMatrixTraining = new double[joinedData.size()][numLabels];
-
-
 
 
 

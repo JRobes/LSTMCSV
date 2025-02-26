@@ -56,19 +56,42 @@ public class App
         //REVERTIR LOS DATOS, YA QUE PUEDEN ESTAR
         Collections.reverse(data);
 
-        System.out.println("@@@@@@@@@@@@@@@@@@@");
-        for(String[] e : data){
-            System.out.println(Arrays.toString(e));
-            //System.out.println(e.length);
-        }
-
         int numFeatures = 3;
         int numLabels = 1;
         int foreseenDays = 1;
 
-        int sequenceLength = 2;
+        int sequenceLength = 3;
 
         int numSamples = data.size();
+        double percentOfTraining = 0.7;
+        int numberOfTrainingItems = (int)Math.round(percentOfTraining * joinedData.size());
+        List<String[]> trainingData = data.subList(0, numberOfTrainingItems);
+        List<String[]> testData = data.subList(numberOfTrainingItems -  sequenceLength +1, data.size());
+
+        System.out.println("Numero de Items de entrenamiento: " + numberOfTrainingItems);
+        System.out.println("-----------------------------------------------------");
+        System.out.println("Numero de Items de test: " + (joinedData.size() -numberOfTrainingItems));
+        System.out.println("-----------------------------------------------------");
+        System.out.println("Numero de training Items: " + trainingData.size());
+        System.out.println("-----------------------------------------------------");
+        System.out.println("Numero de test Items: " + testData.size());
+        System.out.println("-----------------------------------------------------");
+
+        System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+        for(String[] e : data){
+            System.out.println(Arrays.toString(e));
+        }
+
+        System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+        for(String[] e : trainingData){
+            System.out.println(Arrays.toString(e));
+        }
+        System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+        for(String[] e : testData){
+            System.out.println(Arrays.toString(e));
+        }
+
+
 
         System.out.println("numSamples: " + numSamples);
 
@@ -115,16 +138,7 @@ public class App
 
 
 
-        double percentOfTraining = 0.7;
-        int numberOfTrainingItems = (int)Math.round(percentOfTraining * joinedData.size());
-
-
-        /*
-        System.out.println("Numero de Items de entrenamiento: " + numberOfTrainingItems);
-        System.out.println("-----------------------------------------------------");
-        System.out.println("Numero de Items de test: " + (joinedData.size() -numberOfTrainingItems));
-        System.out.println("-----------------------------------------------------");
-
+    /*
 
         double[][] featureMatrixTraining = new double[joinedData.size()][numFeatures];
         double[][] labelMatrixTraining = new double[joinedData.size()][numLabels];

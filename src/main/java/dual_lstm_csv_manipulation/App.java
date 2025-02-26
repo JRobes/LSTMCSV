@@ -55,8 +55,8 @@ public class App
         }
         //REVERTIR LOS DATOS, YA QUE PUEDEN ESTAR
         Collections.reverse(data);
-
-        int numFeatures = 3;
+        System.out.println("DATA NUM DE FEATURES EN ARCHIVO: " + data.get(0).length);
+        int numFeatures = data.get(0).length;
         int numLabels = 1;
         int foreseenDays = 1;
 
@@ -66,7 +66,7 @@ public class App
         double percentOfTraining = 0.7;
         int numberOfTrainingItems = (int)Math.round(percentOfTraining * joinedData.size());
         List<String[]> trainingData = data.subList(0, numberOfTrainingItems);
-        List<String[]> testData = data.subList(numberOfTrainingItems -  sequenceLength +1, data.size());
+        List<String[]> testData = data.subList(numberOfTrainingItems -  sequenceLength + 1, data.size());
 
         System.out.println("Numero de Items de entrenamiento: " + numberOfTrainingItems);
         System.out.println("-----------------------------------------------------");
@@ -77,10 +77,10 @@ public class App
         System.out.println("Numero de test Items: " + testData.size());
         System.out.println("-----------------------------------------------------");
 
-        System.out.println("@@@@@@@@@@@@@@@@ Data entero @@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-        for(String[] e : data){
-            System.out.println(Arrays.toString(e));
-        }
+       // System.out.println("@@@@@@@@@@@@@@@@ Data entero @@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+       // for(String[] e : data){
+       //     System.out.println(Arrays.toString(e));
+       // }
 
         System.out.println("@@@@@@@@@@@@@@@@ Training data @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         for(String[] e : trainingData){
@@ -91,32 +91,36 @@ public class App
             System.out.println(Arrays.toString(e));
         }
 
+        INDArray[] trainingFeaturesAndLabels = new INDArray[2];
+        trainingFeaturesAndLabels = getFeaturesAndLabels(trainingData, sequenceLength, numFeatures);
 
+        INDArray[] testFeaturesAndLabels = new INDArray[2];
+        testFeaturesAndLabels = getFeaturesAndLabels(testData, sequenceLength, numFeatures);
 
-
-
+/*
+        // TEST DATA
         // Inicializar arrays para features y labels
-        double[][][] trainingFeatures = new double[trainingData.size() - sequenceLength][sequenceLength][numFeatures];
-        double[][] trainingLabels     = new double[trainingData.size() - sequenceLength][1];
+        double[][][] testFeatures = new double[testData.size() - sequenceLength][sequenceLength][numFeatures];
+        double[][] testLabels     = new double[testData.size() - sequenceLength][1];
 
         // Procesar los datos
-        for (int i = 0; i < trainingData.size() - sequenceLength; i++) {
+        for (int i = 0; i < testData.size() - sequenceLength; i++) {
             for (int j = 0; j < sequenceLength; j++) {
                 // Leer las features (columnas 2, 3 y 4)
-                trainingFeatures[i][j][0] = Double.parseDouble(trainingData.get(i + j)[1]); // Segunda columna
-                trainingFeatures[i][j][1] = Double.parseDouble(trainingData.get(i + j)[2]); // Tercera columna
-                trainingFeatures[i][j][2] = Double.parseDouble(trainingData.get(i + j)[3]); // Cuarta columna
+                testFeatures[i][j][0] = Double.parseDouble(testData.get(i + j)[1]); // Segunda columna
+                testFeatures[i][j][1] = Double.parseDouble(testData.get(i + j)[2]); // Tercera columna
+                testFeatures[i][j][2] = Double.parseDouble(testData.get(i + j)[3]); // Cuarta columna
             }
             // Leer el target (segunda columna, que es el target)
-            trainingLabels[i][0] = Double.parseDouble(trainingData.get(i + sequenceLength)[1]);
+            testLabels[i][0] = Double.parseDouble(testData.get(i + sequenceLength)[1]);
         }
 
 
-        INDArray featureTrainingArray = Nd4j.create(trainingFeatures);
-        INDArray labelTrainingArray = Nd4j.create(trainingLabels);
-        System.out.println("@@@@@@ INDArray @@@@@@@@@: \n" + featureTrainingArray); // [numSamples - sequenceLength, sequenceLength, numFeatures]
+        INDArray featureTestArray = Nd4j.create(testFeatures);
+        INDArray labelTestArray = Nd4j.create(testLabels);
+        System.out.println("@@@@@@ INDArray Test features @@@@@@@@@: \n" + featureTestArray); // [numSamples - sequenceLength, sequenceLength, numFeatures]
         //System.out.println("Forma de labels: " + Arrays.toString(labelArray.shape()));
-        System.out.println("@@@@@@ INDArray @@@@@@@@@@@: \n" + labelTrainingArray);
+        System.out.println("@@@@@@ INDArray Test labels @@@@@@@@@@@: \n" + labelTestArray);
 
 
 
@@ -161,7 +165,7 @@ public class App
 
 
 
-
+*/
 
 
 
@@ -285,6 +289,31 @@ public class App
 */
         System.out.println("\n\nDONE");
 
+    }
+
+    private static INDArray[] getFeaturesAndLabels(List<String[]> data, int sequenceLength, int numFeatures) {
+        // TRAIN DATA
+        // Inicializar arrays para features y labels
+        double[][][] features = new double[data.size() - sequenceLength][sequenceLength][numFeatures];
+        double[][] labels     = new double[data.size() - sequenceLength][1];
+
+        // Procesar los datos
+        for (int i = 0; i < data.size() - sequenceLength; i++) {
+            for (int j = 0; j < sequenceLength; j++) {
+                for(int k = 0; k < numFeatures; k++){
+                    features[i][j][k] = Double.parseDouble(data.get(i + j)[k]);
+                }
+            }
+            // Leer el target (primera columna, que es el target)
+            labels[i][0] = Double.parseDouble(data.get(i + sequenceLength)[0]);
+        }
+
+        INDArray featureArray = Nd4j.create(features);
+        INDArray labelArray = Nd4j.create(labels);
+        System.out.println("@@@@@@ INDArray features @@@@@@@@@: \n" + featureArray); // [numSamples - sequenceLength, sequenceLength, numFeatures]
+        //System.out.println("Forma de labels: " + Arrays.toString(labelArray.shape()));
+        System.out.println("@@@@@@ INDArray labels @@@@@@@@@@@: \n" + labelArray);
+        return new INDArray[]{featureArray, labelArray};
     }
 
 

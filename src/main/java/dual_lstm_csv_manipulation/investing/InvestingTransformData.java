@@ -135,8 +135,8 @@ public class InvestingTransformData implements IDataPreparation {
                 .convertToDouble("Per")
                 .doubleColumnsMathOp("Diff", MathOp.Subtract, "Max", "Min")
                 .stringToTimeTransform("DateTimeString","DD.MM.YYYY", DateTimeZone.UTC)
-                .renameColumn("DateTimeString", "Date")
-                .removeColumns("Open", "Max", "Min")
+                //.renameColumn("DateTimeString", "Date")
+                .removeColumns("Open", "Max", "Min", "DateTimeString")
                 .filter(new NullWritableColumnCondition("Last"))
                 .build();
 

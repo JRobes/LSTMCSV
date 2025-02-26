@@ -77,27 +77,61 @@ public class App
         System.out.println("Numero de test Items: " + testData.size());
         System.out.println("-----------------------------------------------------");
 
-        System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+        System.out.println("@@@@@@@@@@@@@@@@ Data entero @@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         for(String[] e : data){
             System.out.println(Arrays.toString(e));
         }
 
-        System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+        System.out.println("@@@@@@@@@@@@@@@@ Training data @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         for(String[] e : trainingData){
             System.out.println(Arrays.toString(e));
         }
-        System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+        System.out.println("@@@@@@@@@@@@@@@@ Test data @@@@@@@@@@@@@@@@@@@@@@@@@@@");
         for(String[] e : testData){
             System.out.println(Arrays.toString(e));
         }
 
 
 
-        System.out.println("numSamples: " + numSamples);
+
+
+        // Inicializar arrays para features y labels
+        double[][][] trainingFeatures = new double[trainingData.size() - sequenceLength][sequenceLength][numFeatures];
+        double[][] trainingLabels     = new double[trainingData.size() - sequenceLength][1];
+
+        // Procesar los datos
+        for (int i = 0; i < trainingData.size() - sequenceLength; i++) {
+            for (int j = 0; j < sequenceLength; j++) {
+                // Leer las features (columnas 2, 3 y 4)
+                trainingFeatures[i][j][0] = Double.parseDouble(trainingData.get(i + j)[1]); // Segunda columna
+                trainingFeatures[i][j][1] = Double.parseDouble(trainingData.get(i + j)[2]); // Tercera columna
+                trainingFeatures[i][j][2] = Double.parseDouble(trainingData.get(i + j)[3]); // Cuarta columna
+            }
+            // Leer el target (segunda columna, que es el target)
+            trainingLabels[i][0] = Double.parseDouble(trainingData.get(i + sequenceLength)[1]);
+        }
+
+
+        INDArray featureTrainingArray = Nd4j.create(trainingFeatures);
+        INDArray labelTrainingArray = Nd4j.create(trainingLabels);
+        System.out.println("@@@@@@ INDArray @@@@@@@@@: \n" + featureTrainingArray); // [numSamples - sequenceLength, sequenceLength, numFeatures]
+        //System.out.println("Forma de labels: " + Arrays.toString(labelArray.shape()));
+        System.out.println("@@@@@@ INDArray @@@@@@@@@@@: \n" + labelTrainingArray);
+
+
+
+
+
+
+
+
+
+
+
 
         // Inicializar arrays para features y labels
         double[][][] features = new double[numSamples - sequenceLength][sequenceLength][numFeatures];
-        double[][] labels = new double[numSamples - sequenceLength][1];
+        double[][] labels     = new double[numSamples - sequenceLength][1];
 
 
 

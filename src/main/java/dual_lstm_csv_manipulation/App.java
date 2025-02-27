@@ -5,6 +5,8 @@ import dual_lstm_csv_manipulation.investing.InvestingTransformData;
 import dual_lstm_csv_manipulation.paths.GetSoucePaths;
 import dual_lstm_csv_manipulation.paths.IAbsPaths;
 import org.datavec.api.writable.Writable;
+import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import org.deeplearning4j.ui.api.UIServer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.preprocessor.NormalizerMinMaxScaler;
@@ -27,7 +29,8 @@ import java.util.stream.Collectors;
 public class App 
 {
     private static final Logger log = LoggerFactory.getLogger(App.class);
-    static String fileName = "ACX-short.csv";
+    //static String fileName = "ACX-short.csv";
+    static String fileName = "ACX-2015-2025.csv";
     static String fileNameIBEX = "IBEX35-short.csv";
     //static String path = "C:\\Users\\jrobes\\IdeaProjects\\LSTMCSV\\ACX-short.csv";
     //static String path = "C:\\Users\\COTERENA\\IdeaProjects\\LSTMCSV\\ACX-short.csv";
@@ -105,7 +108,7 @@ public class App
         DataSet testDataSet = new DataSet(testFeaturesAndLabels[0], testFeaturesAndLabels[1]);
 
         System.out.println("Test dataSet features:");
-        System.out.println(testDataSet.getFeatures());
+        //System.out.println(testDataSet.getFeatures());
 
         NormalizerMinMaxScaler normalizer = new NormalizerMinMaxScaler();
         normalizer.fit(trainDataSet);           //Collect the statistics (mean/stdev) from the training data. This does not modify the input data
@@ -113,34 +116,20 @@ public class App
         normalizer.transform(testDataSet);      //Apply normalization to the test data. This is using statistics calculated from the *training* set
 
         System.out.println("Test dataSet features normalized:");
-        System.out.println(testDataSet.getFeatures());
+        //System.out.println(testDataSet.getFeatures());
 
         System.out.println("Train dataSet features normalized:");
-        System.out.println(trainDataSet.getFeatures());
+       // System.out.println(trainDataSet.getFeatures());
 
+        //UIServer uiServer = UIServer.getInstance();
 
-
-
-
-
-
-
-/*
-        MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .weightInit(WeightInit.XAVIER)
-                .updater(new Nesterovs(0.1))
-                .list()
-                .layer(0, new DenseLayer.Builder().nIn(4).nOut(3).activation(Activation.TANH).build())
-                .layer(1, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).activation(Activation.SOFTMAX).nIn(3).nOut(3).build())
-                .build();
-
-        MultiLayerNetwork net = new MultiLayerNetwork(conf);
-        net.init();
-
+        LSTMModel model = new LSTMModel();
+        MultiLayerNetwork network = model.buildModel(numFeatures, 128, 64, 0);
         for (int epoch = 0; epoch < 1; epoch++) {
-            net.fit(trainData);
+            network.fit(trainDataSet);
         }
-*/
+
+
         System.out.println("\n\nDONE");
 
     }
@@ -164,9 +153,9 @@ public class App
 
         INDArray featureArray = Nd4j.create(features);
         INDArray labelArray = Nd4j.create(labels);
-        System.out.println("@@@@@@ INDArray features @@@@@@@@@: \n" + featureArray); // [numSamples - sequenceLength, sequenceLength, numFeatures]
+        //System.out.println("@@@@@@ INDArray features @@@@@@@@@: \n" + featureArray); // [numSamples - sequenceLength, sequenceLength, numFeatures]
         //System.out.println("Forma de labels: " + Arrays.toString(labelArray.shape()));
-        System.out.println("@@@@@@ INDArray labels @@@@@@@@@@@: \n" + labelArray);
+        //System.out.println("@@@@@@ INDArray labels @@@@@@@@@@@: \n" + labelArray);
         return new INDArray[]{featureArray, labelArray};
     }
 

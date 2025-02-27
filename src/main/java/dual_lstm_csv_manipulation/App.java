@@ -97,174 +97,28 @@ public class App
         INDArray[] testFeaturesAndLabels = new INDArray[2];
         testFeaturesAndLabels = getFeaturesAndLabels(testData, sequenceLength, numFeatures);
 
-/*
-        // TEST DATA
-        // Inicializar arrays para features y labels
-        double[][][] testFeatures = new double[testData.size() - sequenceLength][sequenceLength][numFeatures];
-        double[][] testLabels     = new double[testData.size() - sequenceLength][1];
-
-        // Procesar los datos
-        for (int i = 0; i < testData.size() - sequenceLength; i++) {
-            for (int j = 0; j < sequenceLength; j++) {
-                // Leer las features (columnas 2, 3 y 4)
-                testFeatures[i][j][0] = Double.parseDouble(testData.get(i + j)[1]); // Segunda columna
-                testFeatures[i][j][1] = Double.parseDouble(testData.get(i + j)[2]); // Tercera columna
-                testFeatures[i][j][2] = Double.parseDouble(testData.get(i + j)[3]); // Cuarta columna
-            }
-            // Leer el target (segunda columna, que es el target)
-            testLabels[i][0] = Double.parseDouble(testData.get(i + sequenceLength)[1]);
-        }
-
-
-        INDArray featureTestArray = Nd4j.create(testFeatures);
-        INDArray labelTestArray = Nd4j.create(testLabels);
-        System.out.println("@@@@@@ INDArray Test features @@@@@@@@@: \n" + featureTestArray); // [numSamples - sequenceLength, sequenceLength, numFeatures]
-        //System.out.println("Forma de labels: " + Arrays.toString(labelArray.shape()));
-        System.out.println("@@@@@@ INDArray Test labels @@@@@@@@@@@: \n" + labelTestArray);
-
-
-
-
-
-
-
-
-
-
-
-
-        // Inicializar arrays para features y labels
-        double[][][] features = new double[numSamples - sequenceLength][sequenceLength][numFeatures];
-        double[][] labels     = new double[numSamples - sequenceLength][1];
-
-
-
-        // Procesar los datos
-        for (int i = 0; i < numSamples - sequenceLength; i++) {
-            for (int j = 0; j < sequenceLength; j++) {
-                // Leer las features (columnas 2, 3 y 4)
-                features[i][j][0] = Double.parseDouble(data.get(i + j)[1]); // Segunda columna
-                features[i][j][1] = Double.parseDouble(data.get(i + j)[2]); // Tercera columna
-                features[i][j][2] = Double.parseDouble(data.get(i + j)[3]); // Cuarta columna
-            }
-            // Leer el target (segunda columna, que es el target)
-            labels[i][0] = Double.parseDouble(data.get(i + sequenceLength)[1]);
-        }
-
-        // Convertir a INDArray
-        INDArray featureArray = Nd4j.create(features);
-        INDArray labelArray = Nd4j.create(labels);
-
-        // Imprimir formas para verificar
-        System.out.println("Forma de features: " + Arrays.toString(featureArray.shape())); // [numSamples - sequenceLength, sequenceLength, numFeatures]
-        System.out.println("Forma de labels: " + Arrays.toString(labelArray.shape())); // [numSamples - sequenceLength, 1]
-
-        System.out.println("Forma de features: \n" + featureArray); // [numSamples - sequenceLength, sequenceLength, numFeatures]
-        //System.out.println("Forma de labels: " + Arrays.toString(labelArray.shape()));
-        System.out.println("Forma de labels: \n" + labelArray);
-
-
-
-*/
-
-
-
-
-
 
         System.out.println("-----------------------------------------------------");
 
 
-
-    /*
-
-        double[][] featureMatrixTraining = new double[joinedData.size()][numFeatures];
-        double[][] labelMatrixTraining = new double[joinedData.size()][numLabels];
-
-
-
-        double[][] featureMatrixTest = new double[joinedData.size()][numFeatures];
-        double[][] labelMatrixTest = new double[joinedData.size()][numLabels];
-
-        for (int rowIndex = 0; rowIndex < joinedData.size(); rowIndex++) {
-            List<Writable> row = joinedData.get(rowIndex);
-
-            // Extraer características
-            for (int colIndex = 0; colIndex < numFeatures; colIndex++) {
-                featureMatrixTest[rowIndex][colIndex] = row.get(colIndex + 1).toDouble();
-            }
-            // Extraer etiquetas
-            for (int colIndex = 0; colIndex < numLabels; colIndex++) {
-                List<Writable> row2 = joinedData.get(rowIndex);
-                labelMatrixTest[rowIndex][colIndex] = row2.get(1).toDouble();
-            }
-        }
-        */
-
-
-        /*
-        for(int r = 0; r < featureMatrixTest.length; r++){
-            for(int m = 0; m < numFeatures; m++){
-                System.out.print(featureMatrixTest[r][m] + "\t");
-            }
-            System.out.println();
-        }
-        System.out.println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
-        for(int r = 0; r < labelMatrixTest.length; r++){
-            for(int m = 0; m < numLabels; m++){
-                System.out.print(labelMatrixTest[r][m] + "\t");
-            }
-            System.out.println();
-        }
-
-*/
-
-
-    /*
-
-
-        INDArray featureArray = Nd4j.create(featureMatrixTest);
-        INDArray labelArray = Nd4j.create(labelMatrixTest);
-        System.out.println("#####################################################");
-        System.out.println("INDArray feature: \n" + featureArray);
-        System.out.println("Num. rows    " + featureArray.rows());
-
-
-        int rows = featureArray.rows();
-        double num = rows*percentOfTraining;
-        int ff = (int)((long)num);
-        System.out.println("Valor entero para dividir el dataset: " + ff);
-        //We can select arbitrary subsets, using INDArray indexing:
-        //All columns, first 3 rows (note that internal here is columns 0 inclusive to 3 exclusive)
-        INDArray featureTrain = featureArray.get(NDArrayIndex.interval(rows-ff,rows), NDArrayIndex.all()).dup();
-        INDArray featureTest =featureArray.get(NDArrayIndex.interval(0,rows-ff), NDArrayIndex.all()).dup();
-        System.out.println("##############    INDArray featureTrain    #########################");
-        System.out.println(featureTrain);
-        //System.out.println("valorrrr  : " + featureTrain.getDouble(4,2));
-        System.out.println("##############    INDArray featureTest    #########################");
-        System.out.println(featureTest);
-
-        INDArray labelTrain = labelArray.get(NDArrayIndex.interval(rows-ff,rows), NDArrayIndex.all()).dup();
-        INDArray labelTest =labelArray.get(NDArrayIndex.interval(0,rows-ff), NDArrayIndex.all()).dup();
-
-        DataSet trainData = new DataSet(featureTrain,labelTrain);
-        DataSet testData = new DataSet(featureTest, labelTest);
+        DataSet trainDataSet = new DataSet(trainingFeaturesAndLabels[0],trainingFeaturesAndLabels[1]);
+        DataSet testDataSet = new DataSet(testFeaturesAndLabels[0], testFeaturesAndLabels[1]);
 
         System.out.println("Test dataSet features:");
-        System.out.println(testData.getFeatures());
+        System.out.println(testDataSet.getFeatures());
 
         NormalizerMinMaxScaler normalizer = new NormalizerMinMaxScaler();
-        normalizer.fit(trainData);           //Collect the statistics (mean/stdev) from the training data. This does not modify the input data
-        normalizer.transform(trainData);     //Apply normalization to the training data
-        normalizer.transform(testData);      //Apply normalization to the test data. This is using statistics calculated from the *training* set
+        normalizer.fit(trainDataSet);           //Collect the statistics (mean/stdev) from the training data. This does not modify the input data
+        normalizer.transform(trainDataSet);     //Apply normalization to the training data
+        normalizer.transform(testDataSet);      //Apply normalization to the test data. This is using statistics calculated from the *training* set
 
         System.out.println("Test dataSet features normalized:");
-        System.out.println(testData.getFeatures());
+        System.out.println(testDataSet.getFeatures());
 
         System.out.println("Train dataSet features normalized:");
-        System.out.println(trainData.getFeatures());
+        System.out.println(trainDataSet.getFeatures());
 
- */
+
 
 
 

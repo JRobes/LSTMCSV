@@ -95,10 +95,10 @@ public class App
         }
 
         INDArray[] trainingFeaturesAndLabels = new INDArray[2];
-        trainingFeaturesAndLabels = getFeaturesAndLabels(trainingData, sequenceLength, numFeatures);
+        trainingFeaturesAndLabels = getFeaturesAndLabels2(trainingData, sequenceLength, numFeatures);
 
         INDArray[] testFeaturesAndLabels = new INDArray[2];
-        testFeaturesAndLabels = getFeaturesAndLabels(testData, sequenceLength, numFeatures);
+        testFeaturesAndLabels = getFeaturesAndLabels2(testData, sequenceLength, numFeatures);
 
 
         System.out.println("-----------------------------------------------------");
@@ -160,4 +160,44 @@ public class App
     }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    private static INDArray[] getFeaturesAndLabels2(List<String[]> data, int sequenceLength, int numFeatures) {
+        // TRAIN DATA
+        // Inicializar arrays para features y labels
+        double[][][] features = new double[data.size() - sequenceLength + 1][sequenceLength][numFeatures];
+        double[][] labels     = new double[data.size() - sequenceLength + 1][1];
+
+        // Procesar los datos
+        for (int i = 0; i < data.size() - sequenceLength + 1; i++) {
+            for (int j = 0; j < sequenceLength; j++) {
+                for(int k = 0; k < numFeatures; k++){
+                    features[i][k][j] = Double.parseDouble(data.get(i + j)[k]);
+                }
+            }
+            // Leer el target (primera columna, que es el target)
+            labels[i][0] = Double.parseDouble(data.get(i + sequenceLength)[0]);
+        }
+
+        INDArray featureArray = Nd4j.create(features);
+        INDArray labelArray = Nd4j.create(labels);
+        //System.out.println("@@@@@@ INDArray features @@@@@@@@@: \n" + featureArray); // [numSamples - sequenceLength, sequenceLength, numFeatures]
+        //System.out.println("Forma de labels: " + Arrays.toString(labelArray.shape()));
+        //System.out.println("@@@@@@ INDArray labels @@@@@@@@@@@: \n" + labelArray);
+        return new INDArray[]{featureArray, labelArray};
+    }
 }

@@ -184,7 +184,7 @@ public class App
 
         // Procesar los datos
         for (int i = 0; i < data.size() - sequenceLength + 1; i++) {
-            for (int j = 0; j < sequenceLength; j++) {
+            for (int j = 0; j < sequenceLength +1; j++) {
                 for(int k = 0; k < numFeatures; k++){
                     features[i][k][j] = Double.parseDouble(data.get(i + j)[k]);
                 }

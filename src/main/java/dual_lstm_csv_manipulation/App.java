@@ -29,8 +29,8 @@ import java.util.stream.Collectors;
 public class App 
 {
     private static final Logger log = LoggerFactory.getLogger(App.class);
-    //static String fileName = "ACX-short.csv";
-    static String fileName = "ACX-2015-2025.csv";
+    static String fileName = "ACX-short.csv";
+    //static String fileName = "ACX-2015-2025.csv";
     static String fileNameIBEX = "IBEX35-short.csv";
     //static String path = "C:\\Users\\jrobes\\IdeaProjects\\LSTMCSV\\ACX-short.csv";
     //static String path = "C:\\Users\\COTERENA\\IdeaProjects\\LSTMCSV\\ACX-short.csv";
@@ -119,7 +119,7 @@ public class App
         //System.out.println(testDataSet.getFeatures());
 
         System.out.println("Train dataSet features normalized:");
-       // System.out.println(trainDataSet.getFeatures());
+        System.out.println(trainDataSet.getFeatures());
 
         //UIServer uiServer = UIServer.getInstance();
 

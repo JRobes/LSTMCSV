@@ -9,7 +9,7 @@ import org.nd4j.linalg.factory.Nd4j;
 import java.util.List;
 
 public class DataPreparation implements IDataPreparation{
-    @Override
+
     public DataSetIterator prepareData(double[][] rawData, int sequenceLength, int batchSize) {
         int numFeatures = rawData[0].length - 1; // Excluyendo la columna de la etiqueta
         int numSamples = rawData.length - sequenceLength + 1;

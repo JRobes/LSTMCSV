@@ -30,6 +30,7 @@ public class LSTMModel {
                         .nOut(numHiddenUnits2)
                         .activation(Activation.TANH)
                         .build())
+
                 .layer(2, new DenseLayer.Builder()
                         .nIn(numHiddenUnits2)
                         .nOut(25)

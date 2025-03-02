@@ -29,8 +29,8 @@ import java.util.stream.Collectors;
 public class App 
 {
     private static final Logger log = LoggerFactory.getLogger(App.class);
-    static String fileName = "ACX-short.csv";
-    //static String fileName = "ACX-2015-2025.csv";
+    //static String fileName = "ACX-short.csv";
+    static String fileName = "ACX-2015-2025.csv";
     static String fileNameIBEX = "IBEX35-short.csv";
     //static String path = "C:\\Users\\jrobes\\IdeaProjects\\LSTMCSV\\ACX-short.csv";
     //static String path = "C:\\Users\\COTERENA\\IdeaProjects\\LSTMCSV\\ACX-short.csv";
@@ -137,18 +137,18 @@ public class App
     private static INDArray[] getFeaturesAndLabels(List<String[]> data, int sequenceLength, int numFeatures) {
         // TRAIN DATA
         // Inicializar arrays para features y labels
-        double[][][] features = new double[data.size() - sequenceLength][sequenceLength][numFeatures];
-        double[][] labels     = new double[data.size() - sequenceLength][1];
+        double[][][] features = new double[data.size() - sequenceLength -1][sequenceLength][numFeatures];
+        double[] labels     = new double[data.size() - sequenceLength -1];
 
         // Procesar los datos
-        for (int i = 0; i < data.size() - sequenceLength; i++) {
+        for (int i = 0; i < data.size() - sequenceLength -1; i++) {
             for (int j = 0; j < sequenceLength; j++) {
                 for(int k = 0; k < numFeatures; k++){
                     features[i][j][k] = Double.parseDouble(data.get(i + j)[k]);
                 }
             }
             // Leer el target (primera columna, que es el target)
-            labels[i][0] = Double.parseDouble(data.get(i + sequenceLength)[0]);
+            labels[i] = Double.parseDouble(data.get(i + sequenceLength)[0]);
         }
 
         INDArray featureArray = Nd4j.create(features);
@@ -179,12 +179,15 @@ public class App
     private static INDArray[] getFeaturesAndLabels2(List<String[]> data, int sequenceLength, int numFeatures) {
         // TRAIN DATA
         // Inicializar arrays para features y labels
-        double[][][] features = new double[data.size() - sequenceLength + 1][sequenceLength][numFeatures];
-        double[][] labels     = new double[data.size() - sequenceLength + 1][1];
+        System.out.println("Num features: " + numFeatures);
+        System.out.println("Numero de strings en array data: " + data.get(0).length);
+        int numSequences = data.size() - sequenceLength; // 100 - 5 + 1 = 96
+        double[][][] features = new double[numSequences][numFeatures][sequenceLength];
+        double[][] labels     = new double[numSequences][1];
 
         // Procesar los datos
-        for (int i = 0; i < data.size() - sequenceLength + 1; i++) {
-            for (int j = 0; j < sequenceLength +1; j++) {
+        for (int i = 0; i < numSequences; i++) {
+            for (int j = 0; j < sequenceLength; j++) {
                 for(int k = 0; k < numFeatures; k++){
                     features[i][k][j] = Double.parseDouble(data.get(i + j)[k]);
                 }

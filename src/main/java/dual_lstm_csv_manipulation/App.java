@@ -5,8 +5,12 @@ import dual_lstm_csv_manipulation.investing.InvestingTransformData;
 import dual_lstm_csv_manipulation.paths.GetSoucePaths;
 import dual_lstm_csv_manipulation.paths.IAbsPaths;
 import org.datavec.api.writable.Writable;
+import org.deeplearning4j.core.storage.StatsStorage;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.ui.api.UIServer;
+import org.deeplearning4j.ui.model.storage.FileStatsStorage;
+import org.deeplearning4j.ui.model.storage.InMemoryStatsStorage;
+import org.nd4j.evaluation.regression.RegressionEvaluation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.preprocessor.NormalizerMinMaxScaler;
@@ -15,6 +19,7 @@ import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -123,13 +128,26 @@ public class App
 
         //UIServer uiServer = UIServer.getInstance();
 
-        LSTMModel model = new LSTMModel();
-        MultiLayerNetwork network = model.buildModel(numFeatures, 128, 64, 0);
-        for (int epoch = 0; epoch < 1; epoch++) {
+        UIServer uiServer = UIServer.getInstance();
+        //StatsStorage statsStorage = new InMemoryStatsStorage();
+        StatsStorage statsStorage = new FileStatsStorage(new File(System.getProperty("java.io.tmpdir"), "ui-stats.dl4j.33"));
+
+        //LSTMModel model = new LSTMModel();
+        MultiLayerNetwork network = LSTMModel.buildModel(numFeatures, 128, 64, 0, statsStorage);
+        uiServer.attach(statsStorage);
+        for (int epoch = 0; epoch < 100; epoch++) {
+            if(epoch%10 == 0 )
+                System.out.println("epoch: " + epoch);
             network.fit(trainDataSet);
         }
 
+        //INDArray output = network.output(testDataSet.getFeatures());
+        //RegressionEvaluation regEval = new RegressionEvaluation(1);
+        // Evaluar
+        //regEval.eval(testDataSet.getLabels(), output);
 
+// Mostrar estadísticas
+        //System.out.println(regEval.stats());
         System.out.println("\n\nDONE");
 
     }
@@ -179,11 +197,12 @@ public class App
     private static INDArray[] getFeaturesAndLabels2(List<String[]> data, int sequenceLength, int numFeatures) {
         // TRAIN DATA
         // Inicializar arrays para features y labels
+        int numLabels = 1;
         System.out.println("Num features: " + numFeatures);
         System.out.println("Numero de strings en array data: " + data.get(0).length);
         int numSequences = data.size() - sequenceLength; // 100 - 5 + 1 = 96
         double[][][] features = new double[numSequences][numFeatures][sequenceLength];
-        double[][] labels     = new double[numSequences][1];
+        double[][][] labels     = new double[numSequences][numLabels][sequenceLength];
 
         // Procesar los datos
         for (int i = 0; i < numSequences; i++) {
@@ -193,8 +212,22 @@ public class App
                 }
             }
             // Leer el target (primera columna, que es el target)
-            labels[i][0] = Double.parseDouble(data.get(i + sequenceLength)[0]);
+           // labels[i][0] = Double.parseDouble(data.get(i + sequenceLength)[0]);
         }
+        // Procesar los datos
+        for (int i = 0; i < numSequences; i++) {
+            for (int j = 0; j < sequenceLength; j++) {
+                //int numLabels = 1;
+                for(int k = 0; k < numLabels; k++){
+                    //features[i][k][j] = Double.parseDouble(data.get(i + j)[k]);
+                    labels[i][k][j] = Double.parseDouble(data.get(i + j)[k]);
+                }
+            }
+            // Leer el target (primera columna, que es el target)
+            //labels[i][0] = Double.parseDouble(data.get(i + sequenceLength)[0]);
+        }
+
+
 
         INDArray featureArray = Nd4j.create(features);
         INDArray labelArray = Nd4j.create(labels);

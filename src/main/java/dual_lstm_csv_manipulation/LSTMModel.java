@@ -1,5 +1,6 @@
 package dual_lstm_csv_manipulation;
 
+import org.deeplearning4j.core.storage.StatsStorage;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.layers.LSTM;
@@ -8,13 +9,14 @@ import org.deeplearning4j.nn.conf.layers.RnnOutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
+import org.deeplearning4j.ui.model.stats.StatsListener;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.learning.config.Adam;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
 public class LSTMModel {
 
-    public static MultiLayerNetwork buildModel(int numFeatures, int numHiddenUnits1, int numHiddenUnits2, int numOutputs) {
+    public static MultiLayerNetwork buildModel(int numFeatures, int numHiddenUnits1, int numHiddenUnits2, int numOutputs,  StatsStorage statsStorage) {
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(123)
                 .weightInit(WeightInit.XAVIER)
@@ -50,8 +52,9 @@ public class LSTMModel {
 
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
-        model.setListeners(new ScoreIterationListener(100));
-
+        //model.setListeners(new ScoreIterationListener(100));
+        int listenerFrequency = 1;
+        model.setListeners(new StatsListener(statsStorage, listenerFrequency));
         return model;
     }
 }

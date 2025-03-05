@@ -146,13 +146,32 @@ public class App
         // Evaluar
         regEval.eval(testDataSet.getLabels(), testPredicted);
 
-        //INDArray allXYPoints = Nd4j.create(evalPoints);
-        //INDArray predictionsAtXYPoints = model.output(allXYPoints);
+        double xMin = -15;
+        double xMax = 15;
+        double yMin = -15;
+        double yMax = 15;
+//Let's evaluate the predictions at every point in the x/y input space, and
+//plot this in the background
+        int nPointsPerAxis = 40;
+        double[][] evalPoints = new double[nPointsPerAxis*nPointsPerAxis][2];
+        int count = 0;
+        for( int i=0; i<nPointsPerAxis; i++ ){
+            for( int j=0; j<nPointsPerAxis; j++ ){
+                double x = i * (xMax-xMin)/(nPointsPerAxis-1) + xMin;
+                double y = j * (yMax-yMin)/(nPointsPerAxis-1) + yMin;
+                evalPoints[count][0] = x;
+                evalPoints[count][1] = y;
+                count++;
+            }
+        }
+
+
+        INDArray allXYPoints = Nd4j.create(evalPoints);
+        //INDArray predictionsAtXYPoints = network.output(allXYPoints);
 
 // Mostrar estadísticas
         System.out.println(regEval.stats());
-        int nPointsPerAxis = 100;
-        //PlotUtil.plotTestData(testDataSet.getFeatures(), testDataSet.getLabels(), testPredicted, allXYPoints, predictionsAtXYPoints, nPointsPerAxis);
+        PlotUtil.plotTestData(testDataSet.getFeatures(), testDataSet.getLabels(), testPredicted, allXYPoints, testPredicted, nPointsPerAxis);
 
         System.out.println("\n\nDONE");
 

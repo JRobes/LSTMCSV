@@ -128,26 +128,32 @@ public class App
 
         //UIServer uiServer = UIServer.getInstance();
 
-        UIServer uiServer = UIServer.getInstance();
+        //UIServer uiServer = UIServer.getInstance();
         //StatsStorage statsStorage = new InMemoryStatsStorage();
         StatsStorage statsStorage = new FileStatsStorage(new File(System.getProperty("java.io.tmpdir"), "ui-stats.dl4j.33"));
 
         //LSTMModel model = new LSTMModel();
         MultiLayerNetwork network = LSTMModel.buildModel(numFeatures, 128, 64, 0, statsStorage);
-        uiServer.attach(statsStorage);
+        //uiServer.attach(statsStorage);
         for (int epoch = 0; epoch < 100; epoch++) {
             if(epoch%10 == 0 )
                 System.out.println("epoch: " + epoch);
             network.fit(trainDataSet);
         }
 
-        //INDArray output = network.output(testDataSet.getFeatures());
-        //RegressionEvaluation regEval = new RegressionEvaluation(1);
+        INDArray testPredicted = network.output(testDataSet.getFeatures());
+        RegressionEvaluation regEval = new RegressionEvaluation(1);
         // Evaluar
-        //regEval.eval(testDataSet.getLabels(), output);
+        regEval.eval(testDataSet.getLabels(), testPredicted);
+
+        //INDArray allXYPoints = Nd4j.create(evalPoints);
+        //INDArray predictionsAtXYPoints = model.output(allXYPoints);
 
 // Mostrar estadísticas
-        //System.out.println(regEval.stats());
+        System.out.println(regEval.stats());
+        int nPointsPerAxis = 100;
+        //PlotUtil.plotTestData(testDataSet.getFeatures(), testDataSet.getLabels(), testPredicted, allXYPoints, predictionsAtXYPoints, nPointsPerAxis);
+
         System.out.println("\n\nDONE");
 
     }

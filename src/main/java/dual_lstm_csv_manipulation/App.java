@@ -7,15 +7,12 @@ import dual_lstm_csv_manipulation.paths.IAbsPaths;
 import org.datavec.api.writable.Writable;
 import org.deeplearning4j.core.storage.StatsStorage;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
-import org.deeplearning4j.ui.api.UIServer;
 import org.deeplearning4j.ui.model.storage.FileStatsStorage;
-import org.deeplearning4j.ui.model.storage.InMemoryStatsStorage;
 import org.nd4j.evaluation.regression.RegressionEvaluation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.preprocessor.NormalizerMinMaxScaler;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Hello world!
@@ -52,7 +48,7 @@ public class App
 
         System.out.println();
         System.out.println();
-        System.out.println("Datos Unidos...\nNúmero de filas: " + joinedData.size());
+        //System.out.println("Datos Unidos...\nNúmero de filas: " + joinedData.size());
         List<String[]> data = new ArrayList<>();
         for (List<Writable> record : joinedData) {
             Object[] ee = record.toArray();
@@ -63,7 +59,7 @@ public class App
         }
         //REVERTIR LOS DATOS, YA QUE PUEDEN ESTAR
         Collections.reverse(data);
-        System.out.println("DATA NUM DE FEATURES EN ARCHIVO: " + data.get(0).length);
+        //System.out.println("DATA NUM DE FEATURES EN ARCHIVO: " + data.get(0).length);
         int numFeatures = data.get(0).length;
         int numLabels = 1;
         int foreseenDays = 1;
@@ -91,19 +87,19 @@ public class App
        // }
 
         System.out.println("@@@@@@@@@@@@@@@@ Training data @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-        for(String[] e : trainingData){
-            System.out.println(Arrays.toString(e));
-        }
+        //for(String[] e : trainingData){
+        //    System.out.println(Arrays.toString(e));
+        //}
         System.out.println("@@@@@@@@@@@@@@@@ Test data @@@@@@@@@@@@@@@@@@@@@@@@@@@");
-        for(String[] e : testData){
-            System.out.println(Arrays.toString(e));
-        }
+        //for(String[] e : testData){
+        //    System.out.println(Arrays.toString(e));
+        //}
 
         INDArray[] trainingFeaturesAndLabels = new INDArray[2];
-        trainingFeaturesAndLabels = getFeaturesAndLabels2(trainingData, sequenceLength, numFeatures);
+        trainingFeaturesAndLabels = getFeaturesAndLabels(trainingData, sequenceLength, numFeatures);
 
         INDArray[] testFeaturesAndLabels = new INDArray[2];
-        testFeaturesAndLabels = getFeaturesAndLabels2(testData, sequenceLength, numFeatures);
+        testFeaturesAndLabels = getFeaturesAndLabels(testData, sequenceLength, numFeatures);
 
 
         System.out.println("-----------------------------------------------------");
@@ -135,7 +131,7 @@ public class App
         //LSTMModel model = new LSTMModel();
         MultiLayerNetwork network = LSTMModel.buildModel(numFeatures, 128, 64, 0, statsStorage);
         //uiServer.attach(statsStorage);
-        for (int epoch = 0; epoch < 100; epoch++) {
+        for (int epoch = 0; epoch < 400; epoch++) {
             if(epoch%10 == 0 )
                 System.out.println("epoch: " + epoch);
             network.fit(trainDataSet);
@@ -145,7 +141,11 @@ public class App
         RegressionEvaluation regEval = new RegressionEvaluation(1);
         // Evaluar
         regEval.eval(testDataSet.getLabels(), testPredicted);
+        System.out.println("$$$$$$$$$$$$$$$$$$$ PREDICCIONES $$$$$$$$$$$$$$$$$$$");
+        System.out.println(testPredicted);
 
+
+        /*
         double xMin = -15;
         double xMax = 15;
         double yMin = -15;
@@ -172,54 +172,14 @@ public class App
 // Mostrar estadísticas
         System.out.println(regEval.stats());
         PlotUtil.plotTestData(testDataSet.getFeatures(), testDataSet.getLabels(), testPredicted, allXYPoints, testPredicted, nPointsPerAxis);
-
+*/
         System.out.println("\n\nDONE");
 
     }
 
+
+
     private static INDArray[] getFeaturesAndLabels(List<String[]> data, int sequenceLength, int numFeatures) {
-        // TRAIN DATA
-        // Inicializar arrays para features y labels
-        double[][][] features = new double[data.size() - sequenceLength -1][sequenceLength][numFeatures];
-        double[] labels     = new double[data.size() - sequenceLength -1];
-
-        // Procesar los datos
-        for (int i = 0; i < data.size() - sequenceLength -1; i++) {
-            for (int j = 0; j < sequenceLength; j++) {
-                for(int k = 0; k < numFeatures; k++){
-                    features[i][j][k] = Double.parseDouble(data.get(i + j)[k]);
-                }
-            }
-            // Leer el target (primera columna, que es el target)
-            labels[i] = Double.parseDouble(data.get(i + sequenceLength)[0]);
-        }
-
-        INDArray featureArray = Nd4j.create(features);
-        INDArray labelArray = Nd4j.create(labels);
-        //System.out.println("@@@@@@ INDArray features @@@@@@@@@: \n" + featureArray); // [numSamples - sequenceLength, sequenceLength, numFeatures]
-        //System.out.println("Forma de labels: " + Arrays.toString(labelArray.shape()));
-        //System.out.println("@@@@@@ INDArray labels @@@@@@@@@@@: \n" + labelArray);
-        return new INDArray[]{featureArray, labelArray};
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    private static INDArray[] getFeaturesAndLabels2(List<String[]> data, int sequenceLength, int numFeatures) {
         // TRAIN DATA
         // Inicializar arrays para features y labels
         int numLabels = 1;

@@ -25,7 +25,7 @@ public class GetSoucePaths implements IAbsPaths {
             for (String path : p){
                 filePaths.add(path2LevelsUp.toAbsolutePath() + File.separator + path);
             }
-            System.out.println("EEEEEEEEEEEEEEEEEEEEEEE: " + filePaths.size());
+            //System.out.println("EEEEEEEEEEEEEEEEEEEEEEE: " + filePaths.size());
         }catch (IOException e){
             e.printStackTrace();
         }

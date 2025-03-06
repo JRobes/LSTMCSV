@@ -131,7 +131,7 @@ public class App
         //LSTMModel model = new LSTMModel();
         MultiLayerNetwork network = LSTMModel.buildModel(numFeatures, 128, 64, 0, statsStorage);
         //uiServer.attach(statsStorage);
-        for (int epoch = 0; epoch < 400; epoch++) {
+        for (int epoch = 0; epoch < 1000; epoch++) {
             if(epoch%10 == 0 )
                 System.out.println("epoch: " + epoch);
             network.fit(trainDataSet);
@@ -142,6 +142,10 @@ public class App
         // Evaluar
         regEval.eval(testDataSet.getLabels(), testPredicted);
         System.out.println("$$$$$$$$$$$$$$$$$$$ PREDICCIONES $$$$$$$$$$$$$$$$$$$");
+        long[] shape = testPredicted.shape();
+        for(long shapel : shape){
+            System.out.println(shapel);
+        }
         System.out.println(testPredicted);
 
 

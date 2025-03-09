@@ -18,20 +18,23 @@ public class InvestingSaveData2Csv {
             while ((line = br.readLine()) != null) {
                 res = line.substring(1, line.length() - 1);
                 System.out.println(res);
-                String[] fields = res.split("\",\"");
-                String[] changes = new String[fields.length];
-                changes[0] = fields[0];
-                for(int i = 1; i < fields.length; i++){
+                String other = res.replaceAll("\",\"", ";");
+                System.out.println(other);
+                //String[] fields = res.split("\",\"");
+                //double[] changes = new double[fields.length-1];
+                //changes[0] = Double.parseDouble(fields[0]);
+                //for(int i = 1; i < fields.length; i++){
                     //System.out.println();
 
-                    changes[i] = fields[i].replace("\"", "").replace(".", "").replace(",",".");
-                    System.out.println(changes[i]);
-                }
-                for(int i = 1; i < changes.length; i++){
+                    //fields[i].replace("\",", "\";");
+                   // System.out.println(changes[i]);
+               // }
+                String ss = "";
+                //for(int i = 0; i < changes.length; i++){
+                  //   ss = ss + changes[i] + ",";
+                //}
 
-                }
-
-                System.out.println(String.join(",", changes));
+                //System.out.println("WWW"  + ss);
                //
 
 

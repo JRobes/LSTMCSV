@@ -67,7 +67,7 @@ public class App
 
         // REVERTIR LOS DATOS,
         //Collections.reverse(data);
-
+        //par ver di fundiona
 
 
         //System.out.println("DATA NUM DE FEATURES EN ARCHIVO: " + data.get(0).length);

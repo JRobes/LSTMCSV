@@ -5,18 +5,15 @@ import dual_lstm_csv_manipulation.investing.InvestingTransformData;
 import dual_lstm_csv_manipulation.paths.GetSoucePaths;
 import dual_lstm_csv_manipulation.paths.IAbsPaths;
 import org.datavec.api.writable.Writable;
-import org.deeplearning4j.core.storage.StatsStorage;
-import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
-import org.deeplearning4j.ui.model.storage.FileStatsStorage;
-import org.nd4j.evaluation.regression.RegressionEvaluation;
+import org.deeplearning4j.datasets.iterator.utilty.ListDataSetIterator;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
+import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.dataset.api.preprocessor.NormalizerMinMaxScaler;
 import org.nd4j.linalg.factory.Nd4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,9 +62,8 @@ public class App
         }
 
 
-        // REVERTIR LOS DATOS,
-        //Collections.reverse(data);
-        //par ver di fundiona
+        //REVERTIR LOS DATOS,
+        Collections.reverse(data);
 
 
         //System.out.println("DATA NUM DE FEATURES EN ARCHIVO: " + data.get(0).length);
@@ -80,16 +76,16 @@ public class App
 
         int numberOfTrainingItems = (int)Math.round(percentOfTraining * joinedData.size());
         List<String[]> trainingData = data.subList(0, numberOfTrainingItems);
-        List<String[]> testData = data.subList(numberOfTrainingItems -  sequenceLength + 1, data.size());
+        List<String[]> testData = data.subList(numberOfTrainingItems -  sequenceLength, data.size());
 
-        System.out.println("Numero de Items de entrenamiento: " + numberOfTrainingItems);
-        System.out.println("-----------------------------------------------------");
-        System.out.println("Numero de Items de test: " + (joinedData.size() -numberOfTrainingItems));
-        System.out.println("-----------------------------------------------------");
-        System.out.println("Numero de training Items: " + trainingData.size());
-        System.out.println("-----------------------------------------------------");
-        System.out.println("Numero de test Items: " + testData.size());
-        System.out.println("-----------------------------------------------------");
+        System.out.println("-------------------------------------------");
+        System.out.println("Número total de filas:\t\t\t\t" + joinedData.size());
+        System.out.println("% de Training:\t\t\t\t\t\t" + percentOfTraining);
+        System.out.println("Numero de Items de entrenamiento:\t" + numberOfTrainingItems);
+        System.out.println("Numero de Items de test:\t\t\t" + (joinedData.size() - numberOfTrainingItems));
+        System.out.println("Numero de training Items:\t\t\t" + trainingData.size());
+        System.out.println("Numero de test Items:\t\t\t\t" + testData.size());
+        System.out.println("-------------------------------------------");
 
         System.out.println("@@@@@@@@@@@@@@@@ Data entero @@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         //for(String[] e : data){
@@ -105,7 +101,23 @@ public class App
             System.out.println(Arrays.toString(e));
         }
 
-        //getFeaturesAndLabels3(data, columnOfLabels, sequenceLength);
+
+
+        DataSetIterator trainingDataSet = getFeaturesAndLabels3(trainingData, columnOfLabels, sequenceLength);
+        NormalizerMinMaxScaler normalizer = new NormalizerMinMaxScaler();
+        normalizer.fit(trainingDataSet); //Collect the statistics (mean/stdev) from the training data. This does not modify the input data
+        for (DataSetIterator iter = trainingDataSet; iter.hasNext(); ) {
+            DataSet it = iter.next();
+            normalizer.transform(it);
+        }
+        DataSetIterator testDataSet = getFeaturesAndLabels3(testData, columnOfLabels, sequenceLength);
+        for (DataSetIterator iter = testDataSet; iter.hasNext(); ) {
+            DataSet it = iter.next();
+            normalizer.transform(it);
+        }
+        System.out.println("#####################");
+        System.out.println(testDataSet);
+
 
 
 
@@ -219,7 +231,7 @@ public class App
     // El número de features se saca del numero de elemento del String[]
     // La longitud total se saca del size de la Lista
     // Hay que indicar qué columna tiene los label
-    private static void getFeaturesAndLabels3(List<String[]> data, int columnOfLabels, int sequenceLength){
+    private static ListDataSetIterator<DataSet> getFeaturesAndLabels3(List<String[]> data, int columnOfLabels, int sequenceLength){
         System.out.println("Numero de strings en array data (features): " + data.get(0).length);
         System.out.println("Número de elementos (sequence length): " + data.size());
         int dataSize = data.size();
@@ -257,7 +269,7 @@ public class App
             dataSets.add(dataSet);
         }
 
-
+        return new ListDataSetIterator<>(dataSets);
 
     }
 

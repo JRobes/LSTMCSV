@@ -14,6 +14,10 @@ import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.learning.config.Adam;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
+
+//https://stackoverflow.com/questions/61202337/error-labels-and-preoutput-must-have-equal-shapes
+
+
 public class LSTMModel {
 
     public static MultiLayerNetwork buildModel(int numFeatures, int numHiddenUnits1, int numHiddenUnits2, int numOutputs,  StatsStorage statsStorage) {

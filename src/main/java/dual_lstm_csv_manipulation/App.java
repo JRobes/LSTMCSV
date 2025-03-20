@@ -27,8 +27,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- *
- *
+ *https://stackoverflow.com/questions/61202337/error-labels-and-preoutput-must-have-equal-shapes
+ *https://deeplearning4j.konduit.ai/deeplearning4j/reference/recurrent-layers?_ga=2.119259401.1085070398.1742465562-23555796.1732280399
  */
 public class App 
 {
@@ -272,28 +272,29 @@ public class App
         // Matrices para almacenar todas las secuencias y etiquetas
         //INDArray allInputs = Nd4j.create(numSamples, numFeatures, sequenceLength); // Forma: (numSamples, sequenceLength, numFeatures)
         //INDArray allOutputs = Nd4j.create(1, 1); // Forma: (numSamples, 1)
-
+        double[] labelsNew = new double[numSamples];
         INDArray[] transSubMatrix = new INDArray[numSamples];
-        INDArray[] transLabelMatrix = new INDArray[numSamples];
         for(int i = 0; i < numSamples; i++){
             INDArray subMatrix = indArrayFeatures.get(NDArrayIndex.interval(i, sequenceLength + i), NDArrayIndex.all());
             transSubMatrix[i] = subMatrix.transpose();
             System.out.println(transSubMatrix[i]);
-            transLabelMatrix[i] = indArrayLabels.get(NDArrayIndex.point(i + sequenceLength));
-            System.out.println(transLabelMatrix[i]);
             System.out.println("-----------------------------------------------------");
+            labelsNew[i] = labels[sequenceLength + i];
+            System.out.println(labelsNew[i]);
+            System.out.println("-----------------------------------------------------");
+
         }
         INDArray allInputs = Nd4j.stack(0, transSubMatrix);
 
+        INDArray labels2 = Nd4j.create(labelsNew, new int[]{numSamples, 1, 1});
+
+
         // Paso 1: Concatenar los INDArray de rank 1 en un solo INDArray de rank 2
-        INDArray concatenado = Nd4j.concat(0, transLabelMatrix);
 
         // Paso 2: Redimensionar a la forma (lengthOfArray, 1, 1)
-        INDArray allOutputs = concatenado.reshape(numSamples, 1, 1);
 
         // Imprimir el resultado
         System.out.println("Resultado:");
-        System.out.println(allOutputs);
        // allOutputs = Nd4j.stack(0, transLabelMatrix);
 
 /*
@@ -315,7 +316,7 @@ public class App
             System.out.println("=================================");
         }
 */
-        DataSet dataSet = new DataSet(allInputs, allOutputs);
+        DataSet dataSet = new DataSet(allInputs, labels2);
         // Ahora tienes un solo DataSet que puedes usar para entrenar tu red LSTM
         System.out.println("DataSet Input shape: " + Arrays.toString(dataSet.getFeatures().shape()));
         System.out.println("DataSet Output shape: " + Arrays.toString(dataSet.getLabels().shape()));

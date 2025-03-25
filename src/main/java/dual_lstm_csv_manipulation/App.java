@@ -365,6 +365,8 @@ public class App
 
         }
         INDArray allInputs = Nd4j.stack(2, transSubMatrix);
+        System.out.println("All inputs...rank: " + allInputs.rank());
+        System.out.println(allInputs);
 
         INDArray labels2 = Nd4j.create(labelsNew, new int[]{numSamples, 1});
 

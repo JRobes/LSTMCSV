@@ -33,8 +33,8 @@ import java.util.List;
 public class App 
 {
     private static final Logger log = LoggerFactory.getLogger(App.class);
-    //static String fileName = "ACX-short.csv";
-    static String fileName = "ACX-2015-2025.csv";
+    static String fileName = "ACX-short.csv";
+    //static String fileName = "ACX-2015-2025.csv";
     static String fileNameIBEX = "IBEX35-short.csv";
     //static String path = "C:\\Users\\jrobes\\IdeaProjects\\LSTMCSV\\ACX-short.csv";
     //static String path = "C:\\Users\\COTERENA\\IdeaProjects\\LSTMCSV\\ACX-short.csv";
@@ -111,9 +111,9 @@ public class App
 
         System.out.println("@@@@@@@@@@@@@@@@ GET FEATURES AND DATA  - TRAIN @@@@@@@@@@@@@@@@@@@@@@@@@@@");
 
-        DataSet trainDataSet = getFeaturesAndLabels3(trainingData, columnOfLabels, sequenceLength);
+        DataSet trainDataSet = getFeaturesAndLabels4(trainingData, columnOfLabels, sequenceLength);
         System.out.println("@@@@@@@@@@@@@@@@ GET FEATURES AND DATA  - TEST @@@@@@@@@@@@@@@@@@@@@@@@@@@");
-        DataSet testDataSet  = getFeaturesAndLabels3(testData,     columnOfLabels, sequenceLength);
+        DataSet testDataSet  = getFeaturesAndLabels4(testData,     columnOfLabels, sequenceLength);
         NormalizerMinMaxScaler normalizer = new NormalizerMinMaxScaler();
         normalizer.fit(trainDataSet);           //Collect the statistics (mean/stdev) from the training data. This does not modify the input data
         normalizer.transform(trainDataSet);     //Apply normalization to the training data
@@ -326,7 +326,85 @@ public class App
 
     }
 
+    // El número de features se saca del numero de elemento del String[]
+    // La longitud total se saca del size de la Lista
+    // Hay que indicar qué columna tiene los label
+    private static DataSet getFeaturesAndLabels4(List<String[]> data, int columnOfLabels, int sequenceLength){
+        System.out.println("Numero de strings en array data (features): " + data.get(0).length);
+        System.out.println("Número de elementos (sequence length): " + data.size());
+        int dataSize = data.size();
+        int numFeatures = data.get(0).length;
+        // Se quita un dato, ya que una de las filas solo sirve para obtener un label
+        // Normalmente numSamples = dataSize - sequenceLength + 1
+        int numSamples = dataSize - sequenceLength;
+        // Paso 1: Separar features y labels
+        double[][] features = new double[dataSize][numFeatures];
+        double[] labels = new double[dataSize];
+        for (int i = 0; i < dataSize; i++) {
+            for (int j = 0; j < numFeatures; j++) {
+                features[i][j] = Double.parseDouble(data.get(i)[j]);
+            }
+            labels[i] = Double.parseDouble(data.get(i)[columnOfLabels]);
+        }
+        INDArray indArrayFeatures = Nd4j.create(features);
+        INDArray indArrayLabels = Nd4j.create(labels);
 
+        // Matrices para almacenar todas las secuencias y etiquetas
+        //INDArray allInputs = Nd4j.create(numSamples, numFeatures, sequenceLength); // Forma: (numSamples, sequenceLength, numFeatures)
+        //INDArray allOutputs = Nd4j.create(1, 1); // Forma: (numSamples, 1)
+        double[] labelsNew = new double[numSamples];
+        INDArray[] transSubMatrix = new INDArray[numSamples];
+        for(int i = 0; i < numSamples; i++){
+            INDArray subMatrix = indArrayFeatures.get(NDArrayIndex.interval(i, sequenceLength + i), NDArrayIndex.all());
+            transSubMatrix[i] = subMatrix;
+            System.out.println(transSubMatrix[i]);
+            System.out.println("-----------------------------------------------------");
+            labelsNew[i] = labels[sequenceLength + i];
+            System.out.println(labelsNew[i]);
+            System.out.println("-----------------------------------------------------");
+
+        }
+        INDArray allInputs = Nd4j.stack(2, transSubMatrix);
+
+        INDArray labels2 = Nd4j.create(labelsNew, new int[]{numSamples, 1});
+
+
+        // Paso 1: Concatenar los INDArray de rank 1 en un solo INDArray de rank 2
+
+        // Paso 2: Redimensionar a la forma (lengthOfArray, 1, 1)
+
+        // Imprimir el resultado
+        System.out.println("Resultado:");
+        // allOutputs = Nd4j.stack(0, transLabelMatrix);
+
+/*
+        for (int i = sequenceLength; i < dataSize; i++) {
+            // Crear secuencia de features
+            INDArray input = Nd4j.create(sequenceLength, numFeatures);
+            for (int j = 0; j < sequenceLength; j++) {
+                input.putRow(j, Nd4j.create(features[i - sequenceLength + j]));
+            }
+
+            // Crear label (el siguiente valor del label)
+            INDArray output = Nd4j.create(new double[]{labels[i]});
+            // Agregar la secuencia y la etiqueta a las matrices grandes
+            allInputs.putSlice(i - sequenceLength, input); // Agregar la secuencia
+            allOutputs.putScalar(i - sequenceLength, output.getDouble(0)); // Agregar la etiqueta
+            System.out.println(input);
+            System.out.println("---------------------------------");
+            System.out.println(output);
+            System.out.println("=================================");
+        }
+*/
+        DataSet dataSet = new DataSet(allInputs, labels2);
+        // Ahora tienes un solo DataSet que puedes usar para entrenar tu red LSTM
+        System.out.println("DataSet Input shape: " + Arrays.toString(dataSet.getFeatures().shape()));
+        System.out.println("DataSet Output shape: " + Arrays.toString(dataSet.getLabels().shape()));
+
+        //System.out.println(allInputs);
+        return dataSet;
+
+    }
 
     private static INDArray[] getFeaturesAndLabels(List<String[]> data, int sequenceLength, int numFeatures) {
         // TRAIN DATA

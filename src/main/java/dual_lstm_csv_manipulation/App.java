@@ -71,7 +71,7 @@ public class App
         //REVERTIR LOS DATOS,
         Collections.reverse(data);
 
-
+        generateFeaturesAndLabelfile(absolutePaths[0], data);
         //System.out.println("DATA NUM DE FEATURES EN ARCHIVO: " + data.get(0).length);
         int numFeatures = data.get(0).length;
         int numLabels = 1;
@@ -245,6 +245,10 @@ public class App
         PlotUtil.plotTestData(testDataSet.getFeatures(), testDataSet.getLabels(), testPredicted, allXYPoints, testPredicted, nPointsPerAxis);
 */
         System.out.println("\n\nDONE");
+
+    }
+
+    private static void generateFeaturesAndLabelfile(String path, List<String[]> data) {
 
     }
 

@@ -4,8 +4,12 @@ import dual_lstm_csv_manipulation.investing.InvestingTransformData;
 
 import dual_lstm_csv_manipulation.paths.GetSoucePaths;
 import dual_lstm_csv_manipulation.paths.IAbsPaths;
+import org.datavec.api.records.reader.SequenceRecordReader;
+import org.datavec.api.records.reader.impl.csv.CSVSequenceRecordReader;
+import org.datavec.api.split.NumberedFileInputSplit;
 import org.datavec.api.writable.Writable;
 import org.deeplearning4j.core.storage.StatsStorage;
+import org.deeplearning4j.datasets.datavec.SequenceRecordReaderDataSetIterator;
 import org.deeplearning4j.datasets.iterator.utilty.ListDataSetIterator;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.ui.model.storage.FileStatsStorage;
@@ -32,7 +36,10 @@ import java.util.List;
  */
 public class App 
 {
+    //C:\Users\COTERENA\Desktop
     private static final Logger log = LoggerFactory.getLogger(App.class);
+
+    static String myPath = "C:\\Users\\COTERENA\\Desktop\\CSV";
     static String fileName = "ACX-short.csv";
     //static String fileName = "ACX-2015-2025.csv";
     static String fileNameIBEX = "IBEX35-short.csv";
@@ -70,12 +77,25 @@ public class App
 
         //REVERTIR LOS DATOS,
         Collections.reverse(data);
+        CSVGenerator.generateCSVFiles(data, myPath, 0);
 
-        generateFeaturesAndLabelfile(absolutePaths[0], data);
+        //generateFeaturesAndLabelfile(absolutePaths[0], data);
         //System.out.println("DATA NUM DE FEATURES EN ARCHIVO: " + data.get(0).length);
         int numFeatures = data.get(0).length;
         int numLabels = 1;
         int foreseenDays = 1;
+
+        SequenceRecordReader featureReader = new CSVSequenceRecordReader(0, ",");
+        SequenceRecordReader labelReader = new CSVSequenceRecordReader(0, ",");
+
+        featureReader.initialize(new NumberedFileInputSplit("C:\\Users\\COTERENA\\Desktop\\CSV\\feat_%d.csv", 0, 10));
+        labelReader.initialize(new NumberedFileInputSplit("C:\\Users\\COTERENA\\Desktop\\CSV\\label_%d.csv", 0, 10));
+        int miniBatchSize = 2;
+        int numPossibleLabels = 122;//Regression => numPossibleLabels to anything and regression = true
+        boolean regression = true;
+        DataSetIterator iter = new SequenceRecordReaderDataSetIterator(featureReader, labelReader, miniBatchSize, numPossibleLabels, regression);
+
+
 
 
         int numSamples = data.size();
